@@ -2,13 +2,14 @@ function [validRegions, num_regions] = removeInvalidFromSignal(invalidRegions, m
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-if( length(invalidRegions)~=length(signal1) ||  length(invalidRegions)~=length(signal2))
-    error("Signal lengths not all equal");
-end
-
-if ~any(invalidRegions) %if there are no flats in the signal
-    validRegions = {{time},{signal1},{signal2}};
-end
+%   disbaling error checks for quicker processing
+% if( length(invalidRegions)~=length(signal1) ||  length(invalidRegions)~=length(signal2))
+%     error("Signal lengths not all equal");
+% end
+% 
+% if ~any(invalidRegions) %if there are no flats in the signal
+%     validRegions = {{time},{signal1},{signal2}};
+% end
 
 %use |diff| to find changes between normal regions and flat (regions between
 %two spikes are flat)
