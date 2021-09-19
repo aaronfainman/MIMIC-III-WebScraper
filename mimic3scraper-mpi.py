@@ -32,11 +32,12 @@ def getRecordList(url):
 def scrape_mimic_list(record_paths,numprocs):
     filesDownloaded = []
     progress = 0
+    printCollectiveProgress(0, numprocs, "Download Progress")
     for record_path in record_paths:
         progress +=1
-        printCollectiveProgress(progress/len(record_paths), "Download Progress", numprocs)
+        printCollectiveProgress(progress/len(record_paths), numprocs, "Download Progress")
         filesDownloaded.extend(scrape_mimic(record_path=record_path))
-    printCollectiveProgress(1, "Download Progress", numprocs)
+    printCollectiveProgress(1, numprocs, "Download Progress")
     return filesDownloaded
 
 def scrape_mimic(record_path):
@@ -97,7 +98,7 @@ def convertToText(dataFileList, numprocs):
         filePath = ROOTFOLDER+record
         fileSize =  os.path.getsize(filePath+'.dat')
         progress += 1;
-        printCollectiveProgress(progress/len(datfileList), "Conversion Progress", numprocs)
+        printCollectiveProgress(progress/len(datfileList), numprocs, "Conversion Progress")
         if fileSize > fileThreshold:
             # Convert to TXT
             #rdsamp: to text is -p > newName.txt
@@ -118,7 +119,7 @@ def convertToText(dataFileList, numprocs):
                 move_cmd = "wsl "+ move_cmd
             # print(move_cmd)
             os.system( move_cmd )
-    printCollectiveProgress(1, "Conversion Progress", numprocs)
+    printCollectiveProgress(1, numprocs, "Conversion Progress")
         
 
 def extractAbpBeats(fileList):
@@ -141,18 +142,18 @@ def extractAbpBeats(fileList):
         os.system(wabp_cmd) 
         
         progress += 1
-        printCollectiveProgress(progress/len(fileList), "ABP Extraction Progress", numprocs)
-    printCollectiveProgress(1, "ABP Extraction Progress", numprocs)
+        printCollectiveProgress(progress/len(fileList), numprocs, "ABP Extraction Progress")
+    printCollectiveProgress(1, numprocs, "ABP Extraction Progress")
         # print('ABP EXTRACTION COMPLETE -- ' + f)
 
-import time
-def printCollectiveProgress(progress, message, numprocs):
+
+def printCollectiveProgress(numerator, denominator, message,):
     global comm
-    coll_progress = comm.gather(progress, root=0);
+    coll_progress = comm.gather(numerator, root=0);
     if comm.Get_rank()!=0:
         return 0;
     
-    perc_progress = int(sum(coll_progress)*100//numprocs);
+    perc_progress = int(sum(coll_progress)*100//denominator);
 
     progress_text = "|"
     for i in range(perc_progress//5):
@@ -165,8 +166,6 @@ def printCollectiveProgress(progress, message, numprocs):
 
 
 if __name__ == '__main__':
-
-
     rank = comm.Get_rank()
     numprocs = comm.Get_size()
 
