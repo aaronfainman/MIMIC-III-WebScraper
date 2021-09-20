@@ -3,7 +3,8 @@ import requests
 import os
 from mpi4py import MPI
 import numpy as np
-import math
+# import math
+import sys
 
 ROOTURL = "https://physionet.org/files/mimic3wdb/1.0"
 ROOTFOLDER = "./physionet.org/files/mimic3wdb/1.0/"
@@ -32,12 +33,12 @@ def getRecordList(url):
 def scrape_mimic_list(record_paths,numprocs):
     filesDownloaded = []
     progress = 0
-    printCollectiveProgress(0, numprocs, "Download Progress")
+    printDownloadProgress(0,len(record_paths), len(filesDownloaded) )
     for record_path in record_paths:
-        progress +=1
-        printCollectiveProgress(progress/len(record_paths), numprocs, "Download Progress")
         filesDownloaded.extend(scrape_mimic(record_path=record_path))
-    printCollectiveProgress(1, numprocs, "Download Progress")
+        progress +=1
+        printDownloadProgress(progress, len(record_paths), len(filesDownloaded) )
+    printDownloadProgress(len(record_paths),len(record_paths), len(filesDownloaded) )
     return filesDownloaded
 
 def scrape_mimic(record_path):
@@ -164,6 +165,62 @@ def printCollectiveProgress(numerator, denominator, message,):
     print(" ",message,":", progress_text, perc_progress, "%",end='\r')
 
 
+coll_folders_examined = [0 for i in range(0, comm.Get_size())]
+coll_folders_required = [0 for i in range(0, comm.Get_size())]
+coll_files_downloaded = [0 for i in range(0, comm.Get_size())]
+def printDownloadProgress(numFoldersExamined, numFoldersInRecord, numFilesDownloaded):
+    global comm
+    # global coll_folders_required
+    # global coll_folders_examined
+    # global coll_files_downloaded
+    
+    # numprocs = comm.Get_size()
+    rank = comm.Get_rank()
+
+    # if rank!=0:
+    #     req_examined = comm.isend(numFoldersExamined, dest=0, tag=0)
+    #     req_examined.wait()
+    #     req_required = comm.isend(numFoldersInRecord, dest=0, tag=1)
+    #     req_required.wait()
+    #     req_downloaded = comm.isend(numFilesDownloaded, dest=0, tag=2)
+    #     req_downloaded.wait()
+    #     return 0
+
+    # for src in range(1,numprocs):
+    #     req_examined = comm.irecv(source=src, tag=0)
+    #     temp_ex =  req_examined.wait() 
+    #     req_required = comm.irecv(source=src, tag=1)
+    #     temp_req = req_required.wait()
+    #     req_downloaded = comm.irecv(source=src, tag=2)
+    #     temp_down = req_downloaded.wait()
+    #     coll_folders_examined[src] = temp_ex if temp_ex != 0 else coll_folders_examined[src]
+    #     coll_folders_required[src] = temp_req if temp_req != 0 else coll_folders_required[src]
+    #     coll_files_downloaded[src] = temp_down if temp_down != 0 else coll_files_downloaded[src]
+    
+    # coll_folders_examined[0] = numFoldersExamined
+    # coll_folders_required[0] = numFoldersInRecord
+    # coll_files_downloaded[0] = numFilesDownloaded
+
+    # num_folders_examined = sum(coll_folders_examined)
+    # num_folders_required = sum(coll_folders_required)
+    # num_files_downloaded = sum(coll_files_downloaded)
+
+    # perc_progress = num_folders_examined//num_folders_required*100
+    if rank != 0:
+        return -1
+    # ************* currently just use rank 0's progress as approximation for download progress
+    perc_progress = numFoldersExamined*100//numFoldersInRecord
+    progress_text = "|"
+    for i in range(perc_progress//5):
+        progress_text += '\u2590'
+    for i in range(perc_progress//5,20):
+        progress_text += "-"
+    progress_text += "|"
+
+    # print(" Download Progress: ", progress_text, " ", num_folders_examined, "/", num_folders_required, " folders examined. ",num_files_downloaded, " files downloaded",end='\r\r')
+    print(" Download progress:", progress_text, perc_progress, "%",end='\r')
+
+
 
 if __name__ == '__main__':
     rank = comm.Get_rank()
@@ -171,11 +228,22 @@ if __name__ == '__main__':
 
     print("Rank " + str(rank) + " starting...")
 
-
+    if len(sys.argv) > 1:
+        download_files_flag = int(sys.argv[1])
+    else:
+        download_files_flag = 1;
+    if len(sys.argv) > 2:
+        start_download_idx = int(sys.argv[2])
+    else:
+        start_download_idx = 0;
+    if len(sys.argv) > 3:
+        end_download_idx = int(sys.argv[3])
+    else:
+        end_download_idx = 5;
 
     if rank == 0:
         allRecordPaths = getRecordList(ROOTURL)
-        allRecordPaths = allRecordPaths[10:14]
+        allRecordPaths = allRecordPaths[start_download_idx:end_download_idx]
         amountToProc = len(allRecordPaths)//numprocs
         sendRecs = []
         #MPI scatter requires scattering a list with num elements equal to num proceses
@@ -190,10 +258,10 @@ if __name__ == '__main__':
     myRecords = []
     myRecords = comm.scatter(sendRecs, root=0)
     
-    # print(rank, " - ", myRecords)
-    print("\nBeginning downloads.") if rank==0 else 0
-    myFilesDownloaded = scrape_mimic_list(myRecords, numprocs)
-    print("\nDownloads complete.") if rank==0 else 0
+    if download_files_flag!=0:
+        print("\nBeginning downloads.") if rank==0 else 0
+        scrape_mimic_list(myRecords, numprocs)
+        print("\nDownloads complete.") if rank==0 else 0
 
     comm.Barrier()
     
