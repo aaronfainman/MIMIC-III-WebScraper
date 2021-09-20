@@ -13,7 +13,7 @@ function [] = filterAndSegment(opts)
 %      the signal
 % 5. write every segment to a file
 %       naming convention: <7 digit patient record no>_<4 digit record no>-<4 digit segment no>.txt
-% 6. write each beat location for every segment to a file
+% 6. (Commented out) write each beat location for every segment to a file
 %       naming convention: each same name as segment with a b at the end
 
 if ~isfolder(opts.orig_file_dir)
@@ -102,9 +102,9 @@ parfor idx = opts.first_record_process:opts.last_record_process
              % ***********  6. write beats for every segment to a file *********** 
              %get location of ABP beats for segment - necessary for later
              %  feature extraction
-             shifted_beats = getABPBeatsFromSegment(segmentedFileData{x}(:,1), data(:,1), locOfAbpBeats);
-             outPath = opts.segmented_abp_dir+fileList(idx).name(1:end-4) + "-"+num2str(x,'%0.4d')+"b.txt";
-             writematrix(shifted_beats, outPath , 'Delimiter', 'tab');
+%              shifted_beats = getABPBeatsFromSegment(segmentedFileData{x}(:,1), data(:,1), locOfAbpBeats);
+%              outPath = opts.segmented_abp_dir+fileList(idx).name(1:end-4) + "-"+num2str(x,'%0.4d')+"b.txt";
+%              writematrix(shifted_beats, outPath , 'Delimiter', 'tab');
          end
       end
 
