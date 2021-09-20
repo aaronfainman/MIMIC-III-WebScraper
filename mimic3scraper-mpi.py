@@ -132,12 +132,14 @@ def extractAbpBeats(fileList):
     progress = 0;
     for f in fileList:
         # print('EXTRACTING ABP -- ' + f)
-        wabp_cmd = "taskkill /im  wabp -r " + ROOTFOLDER + f + " /f >null 2>&1"
+        # wabp_cmd = "taskkill /im  wabp -r " + ROOTFOLDER + f + " /f >null 2>&1"
+        wabp_cmd = "wabp -r " + ROOTFOLDER + f
         if not IS_POSIX:
             wabp_cmd = "wsl "+ wabp_cmd
         os.system(wabp_cmd)
         #output from command suppressed using: taskkill /im <rdann command> /f >null 2>&1
-        wabp_cmd = "taskkill /im rdann -r " + ROOTFOLDER + f + " -a wabp >" + ABPANNFOLDER + f[11:]+"_abp.txt /f >null 2>&1"
+        # wabp_cmd = "taskkill /im rdann -r " + ROOTFOLDER + f + " -a wabp >" + ABPANNFOLDER + f[11:]+"_abp.txt /f >null 2>&1"
+        wabp_cmd = "rdann -r " + ROOTFOLDER + f + " -a wabp >" + ABPANNFOLDER + f[11:]+"_abp.txt"
         if not IS_POSIX:
             wabp_cmd = "wsl "+ wabp_cmd
         os.system(wabp_cmd) 
