@@ -66,7 +66,7 @@ parfor idx = opts.first_record_process:opts.last_record_process
    
     % *********** 2. filter data (LPF + hampel filter) ***********   
 %     currently not filtering either signal for frequency analysis purposes
-%       data(:,3) = filter(filt_num, filt_den, data(:,3));
+     if(opts.apply_filter); data(:,3) = filter(filt_num, filt_den, data(:,3)); end
      
      % Hampel filter to remove outliers
      if (opts.apply_hampel_abp); data(:,2) = hampel(data(:,2)); end

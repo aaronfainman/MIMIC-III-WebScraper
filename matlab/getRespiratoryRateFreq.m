@@ -3,12 +3,18 @@ function [resp_rate] = getRespiratoryRateFreq(time,ppg_wave)
 %   Detailed explanation goes here
 
 %Approach 2: take fft and find frequency indices between 0.05 and 0.47 Hz
-%   find frequency with max component in that interval
+%   find frequency with max component in that interval by using max
+%   component or a weighted average
 [freq,ppg_fft] = singlesidedFFT( time,ppg_wave);
 start_idx = find(freq>=0.05, 1);
 end_idx = find(freq>=0.47, 1)-1;
-[~,freq_resp_idx] = max(ppg_fft(start_idx:end_idx));
-resp_rate = freq(freq_resp_idx);
+
+%This code gives the maximum frequency component in that band
+% [~,freq_resp_idx] = max(ppg_fft(start_idx:end_idx));
+% resp_rate = freq(freq_resp_idx);
+
+%This gives the weighted avergae frequency in the band of interest
+resp_rate = freq(start_idx:end_idx)*abs(ppg_fft(start_idx:end_idx))/sum(abs(ppg_fft(start_idx:end_idx)));
 
 
 
