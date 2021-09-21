@@ -15,7 +15,7 @@ numDiasPeaks = 0;
 feetLocs = [];
 numFeet = 0;
 
-figure;hold on;
+
 for i=1:length(pks)-1
     band = [pk_idx(i), pk_idx(i+1)];
     
@@ -37,12 +37,22 @@ for i=1:length(pks)-1
     numFeet = numFeet+1;
     feetLocs(numFeet) = footLocation;
     
-    %Elgendi: diastolic peak has a negative peak in second deriv
-    sec_diff_signal = diff(diff_signal(systolicLocation+10:footLocation));
+    diastolicLocation = find(islocalmax(movmean(diff_signal(systolicLocation+10:footLocation-5),10))==1);
     
-    potDiastolicLocs = find(islocalmin(sec_diff_signal)==1);
-    [~, diastolicLocation] = mink(sec_diff_signal(potDiastolicLocs),2);
-    diastolicLocation = diastolicLocation(2) + systolicLocation+10;
+    if(isempty(diastolicLocation)); continue; end;
+    
+    diastolicLocation = diastolicLocation(end)+systolicLocation+10;    
+
+    numDiasPeaks = numDiasPeaks+1;
+    diastolicPeakLocs(numDiasPeaks) = diastolicLocation;
+%     diastolicLocation
+    
+%     %Elgendi: diastolic peak has a negative peak in second deriv
+%     sec_diff_signal = diff(diff_signal(systolicLocation+10:footLocation));
+%     
+%     potDiastolicLocs = find(islocalmin(sec_diff_signal)==1);
+%     [~, diastolicLocation] = mink(sec_diff_signal(potDiastolicLocs),2);
+%     diastolicLocation = diastolicLocation(2) + systolicLocation+10;
 %     (abs(diff_signal(systolicLocation+10:footLocation))<2e-2);%.*ppg_wave(systolicLocation:footLocation);
     
 %     clf
@@ -54,29 +64,14 @@ for i=1:length(pks)-1
 %      % moving backwards in derivative signal, foot is where derivative moves
 %     % from negative to positive to negative
 %      diastolicLocation = find(diff_sig(footLocation-1:-1:band(1))<0,1);
-     if(isempty(diastolicLocation)); continue; end;
+%      if(isempty(diastolicLocation)); continue; end;
 %      diastolicLocation = footLocation - diastolicLocation;
 %      
-     numDiasPeaks = numDiasPeaks+1;
-     diastolicPeakLocs(numDiasPeaks) = diastolicLocation;
+
      
 end
 
-% beats =find( islocalmax(diff_sig, 'MinSeparation', 30)==1);
-% 
-clf
-t = 1:length(ppg_wave);
-plot(t(1:end),ppg_wave)
-hold on
-% % plot(t(1:end-1),10.*diff_sig)%ppg_wave)
-% 
-scatter(t(systolicPeakLocs), ppg_wave(systolicPeakLocs), 'LineWidth',2);
-scatter(t(feetLocs), ppg_wave(feetLocs), 'x', 'LineWidth',2);
-scatter(t(diastolicPeakLocs), ppg_wave(diastolicPeakLocs), 's', 'LineWidth',2);
-% 
-% scatter(t(beats), diff_sig(beats), 'x');
 
-diastolicPeakLocs
 
 end
 
