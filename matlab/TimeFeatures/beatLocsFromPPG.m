@@ -1,10 +1,12 @@
-function beat_locs = beatLocsFromPPG(ppg_wave, max_hr_bpm, sampling_rate)
+function beat_locs = beatLocsFromPPG(ppg_wave, max_hr_bpm, sampling_rate, feature, filter)
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
 
 if(nargin==1)
     max_hr_bpm = 220
     sampling_rate = 125;
+    feature = 'diastolic';
+    filter = 'true';
 end
 
 %double the max hr set since this will be used for filtering and must be
@@ -18,7 +20,11 @@ min_sep_btwn_beats = round(1/(220/60)*sampling_rate);
 
 filt_ppg_wave = movmean(ppg_wave, min_sep_btwn_beats);
 
-beats = islocalmin(filt_ppg_wave,'MinSeparation', min_sep_btwn_beats);
+if strcmp(lower(feature),'systolic')
+    beats = islocalmax(filt_ppg_wave,'MinSeparation', min_sep_btwn_beats);
+else
+    beats = islocalmin(filt_ppg_wave,'MinSeparation', min_sep_btwn_beats);
+end
 
 beat_locs = find(beats==1);
 
