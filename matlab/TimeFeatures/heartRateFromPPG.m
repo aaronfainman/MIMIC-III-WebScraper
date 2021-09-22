@@ -1,4 +1,4 @@
-function [avg_hr, max_hr, most_recent_hr] = heartRateFromBeatLocs(ppg_feet, sampling_rate)
+function [avg_hr, max_hr, most_recent_hr] = heartRateFromPPG(ppg_feet, sampling_rate)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
