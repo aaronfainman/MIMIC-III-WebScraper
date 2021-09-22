@@ -1,8 +1,8 @@
-function [avg_hr, max_hr, most_recent_hr] = heartRateFromBeatLocs(beat_locs, sampling_rate)
+function [avg_hr, max_hr, most_recent_hr] = heartRateFromBeatLocs(ppg_feet, sampling_rate)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-hr_bpm = 60./(diff(beat_locs)./sampling_rate);
+hr_bpm = 60./(diff(ppg_feet)./sampling_rate);
 
 avg_hr = mean(hr_bpm);
 max_hr = max(hr_bpm);

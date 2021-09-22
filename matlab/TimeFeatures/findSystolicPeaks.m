@@ -1,10 +1,14 @@
-function [systolicPeakLocs, diastolicPeakLocs, feetLocs] = findSystolicPeaks(ppg_wave)
+function [systolicPeakLocs, diastolicPeakLocs, feetLocs] = findSystolicPeaks(ppg_wave, samp_freq)
 %FINDSYSTOLICPEAKS Summary of this function goes here
 %   Detailed explanation goes here
 
 ppg_wave = normalize(ppg_wave);
 
-diff_signal = movmean(diff(ppg_wave),10);
+filt_design = designfilt('lowpassiir','FilterOrder',6, ...
+    'HalfPowerFrequency',30/samp_freq,'DesignMethod','butter');
+ppg_wave = filtfilt(filt_design, ppg_wave);
+
+diff_signal = diff(ppg_wave);
 
 [pks, pk_idx] = findpeaks(diff_signal, 'MinPeakHeight', 0.08, 'MinPeakDistance', 30);
 
@@ -32,19 +36,36 @@ for i=1:length(pks)-1
     % avoid working out whether the diacrotic nothc is present or not
     footLocation = find(diff_signal( band(2)-5:-1:band(1))<0,1);
     if(isempty(footLocation)); continue; end;
-    footLocation = band(2)-footLocation+1-5;
+    footLocation = band(2)-footLocation+1-5+1;
     
     numFeet = numFeet+1;
     feetLocs(numFeet) = footLocation;
     
-    diastolicLocation = find(islocalmax(movmean(diff_signal(systolicLocation+10:footLocation-5),10))==1);
+    sec_diff_signal = diff(diff_signal(systolicLocation+5:footLocation));
     
-    if(isempty(diastolicLocation)); continue; end;
+
+    potDiastolicLocs = find(islocalmin(sec_diff_signal))+systolicLocation+5;
     
-    diastolicLocation = diastolicLocation(end)+systolicLocation+10;    
+    
+    score = [potDiastolicLocs, abs(diff_signal(potDiastolicLocs)),abs(sec_diff_signal(potDiastolicLocs-systolicLocation-5)), ppg_wave(potDiastolicLocs)]; %abs(sec_diff_signal(potDiastolicLocs))
+    
+    score(:,2:end) = [normalize(score(:,2:end), 'range')];
+    
+    score(:,5) = (1-score(:,2))+0.1.*(1-score(:,3))+score(:,4);
+    
+    [~,best_score_idx] = max(score(:,5));
+    
+    diastolicLocation = score(best_score_idx, 1);
+    
+%     diastolicLocation = find(islocalmax(diff_signal(systolicLocation+10:footLocation-5))==1);
+    
+%     if(isempty(diastolicLocation)); continue; end;
+    
+%     diastolicLocation = diastolicLocation(end)+systolicLocation+10;
 
     numDiasPeaks = numDiasPeaks+1;
     diastolicPeakLocs(numDiasPeaks) = diastolicLocation;
+%     diastolicPeakLocs = [diastolicPeakLocs; diastolicLocation];
 %     diastolicLocation
     
 %     %Elgendi: diastolic peak has a negative peak in second deriv
