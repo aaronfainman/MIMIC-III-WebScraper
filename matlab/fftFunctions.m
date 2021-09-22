@@ -10,7 +10,6 @@ function [freqVector, freqSpectrum] = singlesidedFFT(timeVector, timeSignal)
    n = length(timeVector);
    dT = mean(diff(timeVector));
    df = 1/dT;
-   %freqVector = (-n/2:(n/2-1))* (df/n);
    freqVector = (0:(n/2 -1)) * (df/n);
    freqSpectrum = fft(timeSignal)/df;
    freqSpectrum(n/2+1 : end) = [];
