@@ -44,8 +44,10 @@ end
 
 %Filter transfer function
 
-[filt_num, filt_den] = butter(opts.filter.order, ...
-    2*pi.*opts.filter.cutoff/(2*pi*opts.samp_freq), opts.filter.type);
+%Chowdhury: Esimating blood pressure from the photoplethysmogram ... p.6
+%   uses a zero phase IIR butterworth filter, 6th order with fc=25 Hz
+filt_design = designfilt(opts.filter.type,'FilterOrder',opts.filter.order, ...
+    'HalfPowerFrequency',opts.filter.cutoff/opts.samp_freq,'DesignMethod','butter');
 
 if opts.last_record_process == -1
     opts.last_record_process = length(fileList)
@@ -66,7 +68,7 @@ parfor idx = opts.first_record_process:opts.last_record_process
    
     % *********** 2. filter data (LPF + hampel filter) ***********   
 %     currently not filtering either signal for frequency analysis purposes
-     if(opts.apply_filter); data(:,3) = filter(filt_num, filt_den, data(:,3)); end
+     if(opts.apply_ppg_filter); data(:,3) = filtfilt(filt_design, data(:,3)); end
      
      % Hampel filter to remove outliers
      if (opts.apply_hampel_abp); data(:,2) = hampel(data(:,2)); end
