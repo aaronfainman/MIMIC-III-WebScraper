@@ -12,10 +12,10 @@ if excludeDC
     sortedInd(sortedInd==1) = [];
 end
 
-% localMaxima = islocalmax(abs(spectrum));
-% localMaxima = localMaxima(sortedInd);
-% 
-% sortedInd(~localMaxima) = [];
+localMaxima = islocalmax(abs(spectrum));
+localMaxima = localMaxima(sortedInd);
+
+sortedInd(~localMaxima) = [];
 
 if (numMax < length(sortedInd))
     sortedInd = sortedInd(1:numMax);
