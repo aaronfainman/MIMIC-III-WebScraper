@@ -45,7 +45,7 @@ for i=1:length(pks)-1
     %Finding the diastolic peak: all possible locations between systolic
     %peak and foot are considered. These locations are local minima in the
     %second derivative of the signal (M. Elgendi, On the analysis of
-    %fingertip photoplethysmogram signals p. 6). A scoring matrix is then
+    %fingertip photoplethysmogram signals). A scoring matrix is then
     %used to find the highest point in the PPG with the flattest
     %derivative. Something worth exploring is the movvar of the ppg signal
     sec_diff_signal = diff(diff_signal(systolicLocation+5:footLocation));

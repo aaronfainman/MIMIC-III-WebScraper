@@ -10,7 +10,9 @@ function [PA, IPA, AI] = ppgAreaAndHeightFeatures(ppg_wave, sortedFeatures)
 PA = [];
 IPA = [];
 AI = [];
-for i = 1:length(sortedFeatures)
+
+[numRows, ~] = size(sortedFeatures);
+for i = 1:numRows
     
     first_foot = sortedFeatures(i,1);
     last_foot = sortedFeatures(i,4);
