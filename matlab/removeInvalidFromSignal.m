@@ -26,7 +26,7 @@ else
 end
 
 
-validRegions = {{},{},{}};
+validRegions = {};
 num_regions = 0;
 
 % extract non flats regions
