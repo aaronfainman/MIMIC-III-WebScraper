@@ -1,20 +1,24 @@
-function [pearsonCorrCoeff, timeShift] = checkCorrelation(t, abp, ppg)
+function [pearsonCorrCoeff, timeDiff, ppg_shift, abp_shift, t_shift] = checkCorrelation(t, abp, ppg)
 
 Ts = mean(diff(t));
 
-[~,~, timeShift] = crossCorrelation(t, abp, ppg);
+[~,~, timeDiff] = crossCorrelation(t, abp, ppg);
 
-shift = round(timeShift/Ts);
+shift = round(timeDiff/Ts);
 
 if (shift > 0)
-    ppg_ = ppg(shift:end);
-    abp_ = abp(1:length(ppg_));
+    ppg_shift = ppg(shift:end);
+    abp_shift = abp(1:length(ppg_shift));
+    t_shift = t(1:length(ppg_shift));
 elseif (shift < 0)
-    abp_ = abp(-shift:end);
-    ppg_ = ppg(1:length(abp_));
+    abp_shift = abp(-shift:end);
+    ppg_shift = ppg(1:length(abp_shift));
+    t_shift = t(1:length(abp_shift));
 end
 
-pearsonCorrCoeff = pearsonCoeff(ppg_, abp_);
+pearsonCorrCoeff = pearsonCoeff(ppg_shift, abp_shift);
+
+
 
 end
 

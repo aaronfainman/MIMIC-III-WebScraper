@@ -1,7 +1,33 @@
 function [inputFeatures] = fullInputOutputFeatureExtraction(fullFilePath,opts)
-%UNTITLED Summary of this function goes here
+%UNTITLED Extraction and scaling of features from file
 %   Detailed explanation goes here
 
+if(nargin == 1)
+    opts.PPGMean = 0.9706;
+    opts.PPGSD = 0.3254;
+    opts.ABPMean = 79.6121;
+    opts.ABPSD = 22.2472;
+    opts.sysPeakAmpMean = 1.3836;
+    opts.sysPeakAmpSD = 0.1669;
+    opts.diasPeakAmpMean = 0.9013;
+    opts.diasPeakAmpSD = 0.2232;
+    opts.feetAmplitudeMean = 0.6989;
+    opts.feetAmplitudeSD = 0.1564;
+    opts.heartRateMean = 45.5135;
+    opts.heartRateSD = 47.1093;
+    opts.respRateMean = 0.1247;
+    opts.respRateSD = 0.1259;
+    opts.PAMean = 30.2371;
+    opts.PASD = 30.3701;
+    opts.IPAMean = 0.2650;
+    opts.IPASD = 0.3202;
+    opts.AIMean = 0.6307;
+    opts.AISD = 0.1586;
+    opts.deltaTMean = 0.2904;
+    opts.deltaTSD = 0.1019;
+    opts.CTMean = 0.1781;
+    opts.CTSD = 0.0343;
+end
     
 dataFile = fopen(opts.segmented_file_dir + fileList(idx).name);
 data = cell2mat(textscan( dataFile, ...
@@ -30,7 +56,7 @@ feet_amplitude = (feet_amplitude - opts.feetAmplitudeMean)/(3*opts.feetAmplitude
 inputFeatures('feetAmp') = feet_amplitude;
 
 heart_rate = heartRateFromPPG(sortedFeatures(:,1), sortedFeatures(:,4), opts.samp_freq);
-heart_rate = (heart_rate-opts.heartRateMean)/(3*heartRateSD);
+heart_rate = (heart_rate-opts.heartRateMean)/(3*opts.heartRateSD);
 inputFeatures('HR') = heart_rate;
 
 resp_rate =  getRespiratoryRateFreq(time, ppg_wave);
