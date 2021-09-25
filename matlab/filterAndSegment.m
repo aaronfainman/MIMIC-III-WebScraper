@@ -50,7 +50,7 @@ filt_design = designfilt(opts.filter.type,'FilterOrder',opts.filter.order, ...
     'HalfPowerFrequency',opts.filter.cutoff/opts.samp_freq,'DesignMethod','butter');
 
 if opts.last_record_process == -1
-    opts.last_record_process = length(fileList)
+    opts.last_record_process = length(fileList);
 end
 
 parfor idx = opts.first_record_process:opts.last_record_process
@@ -78,18 +78,30 @@ parfor idx = opts.first_record_process:opts.last_record_process
      invalidABPRegions = findInvalidABPRegions(data(:,2), locOfAbpBeats);
      
      abp_flats = findFlatRegionsFast(data(:,2), opts.flats.derivative_thresh,opts.flats.window, opts.flats.window_thresh);
-     ppg_flats = findFlatRegionsFast(data(:,3), opts.flats.derivative_thresh,opts.flats.window, opts.flats.window_thresh);
+     ppg_flats = findFlatRegionsFast(data(:,3), opts.flats.derivative_thresh,opts.flats.window, opts.flats.window_thresh); 
      all_invalid = abp_flats | ppg_flats | invalidABPRegions;
      
-     regioned_signals = {};
-     [regioned_signals, num_regions] = removeInvalidFromSignal(all_invalid, opts.min_region_length, data(:,1), data(:,2), data(:,3));
+     reg = {};
+     [reg_signals, num_reg] = removeInvalidFromSignal(all_invalid, opts.min_region_length, data(:,1), data(:,2), data(:,3));
      
+     regioned_signals = {};
+     num_regions = 0;
+     for i=1:num_reg
+        out_of_range = findAbpOutOfRange(reg_signals{i}{2}{:}, opts.ranges.sbp_range,...
+             opts.ranges.dbp_range, opts.ranges.window_length);
+        [r, n] = removeInvalidFromSignal(out_of_range, opts.min_region_length, ...
+            reg_signals{i}{1}{:}, reg_signals{i}{2}{:}, reg_signals{i}{3}{:});
+        
+        regioned_signals = horzcat(regioned_signals, r);
+        num_regions = num_regions + n;
+     end
+
      segmentedData=[];
  
      % ***********  4. for every valid region: segment out fixed number of periods of the signal
       for i=1:num_regions
-          regioned_data = [regioned_signals{i}{1}{:},regioned_signals{i}{2}{:},regioned_signals{i}{3}{:}]
-         segmentedFileData = segmentSignal(  [regioned_signals{i}{1}{:}, ...
+          % regioned_data = [regioned_signals{i}{1}{:},regioned_signals{i}{2}{:},regioned_signals{i}{3}{:}]
+          segmentedFileData = segmentSignal(  [regioned_signals{i}{1}{:}, ...
              regioned_signals{i}{2}{:}, ...
              regioned_signals{i}{3}{:}], ...
              opts.num_periods_per_segment, 3);
@@ -98,8 +110,15 @@ parfor idx = opts.first_record_process:opts.last_record_process
          for x = 1:length(segmentedFileData)
              out_data = segmentedFileData{x};
              out_data(:,1) = segmentedFileData{x}(:,1) - segmentedFileData{x}(1,1);
-             outPath = opts.segmented_file_dir+fileList(idx).name(1:end-4) + "-"+num2str(x,'%0.4d')+".txt";
-             writematrix(out_data, outPath , 'Delimiter', 'tab');
+             
+             % NB!!!!!!
+             % We may want the time shift for training purposes?
+             [pearson, ~] = checkCorrelation(out_data(:,1), out_data(:,2), out_data(:,3));
+             
+             if (pearson >=  opts.pearson_corr_threshold)
+                outPath = opts.segmented_file_dir+fileList(idx).name(1:end-4) + "-"+num2str(x,'%0.4d')+".txt";
+                writematrix(out_data, outPath , 'Delimiter', 'tab');
+             end
              
              % ***********  6. write beats for every segment to a file *********** 
              %get location of ABP beats for segment - necessary for later
