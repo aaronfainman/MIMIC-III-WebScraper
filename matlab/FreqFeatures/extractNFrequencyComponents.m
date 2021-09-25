@@ -1,4 +1,4 @@
-function [pkIndices, pkFreqs, pkMags, pkPhases, bandwidth] = extractNFrequencyComponents(t, x, numComponents, phasesPerPeak, bandwidth_criterion)
+function [pkIndices, pkFreqs, pkMags, pkPhases, bandwidth] = extractNFrequencyComponents(t, x, numComponents, bandwidth_criterion)
 [f, fftX] = singlesidedFFT(t, x);
 
 psdX = (abs(fftX)).^2;

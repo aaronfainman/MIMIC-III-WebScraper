@@ -1,4 +1,4 @@
-function [pkIndices, pkFreqs, pkMags, pkPhases, pkAvgWidth, fftLength] = extractFrequencyComponents(t, x, numComponents, phasesPerPeak)
+function [pkIndices, pkFreqs, pkMags, pkPhases, pkAvgWidth, fftLength] = extractFrequencyPeaks(t, x, numComponents, phasesPerPeak)
 [f, fftX] = singlesidedFFT(t, x);
 
 psdX = (abs(fftX)).^2;
