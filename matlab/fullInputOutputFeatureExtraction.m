@@ -56,11 +56,11 @@ feet_amplitude = (feet_amplitude - opts.feetAmplitudeMean)/(3*opts.feetAmplitude
 inputFeatures('feetAmp') = feet_amplitude;
 
 heart_rate = heartRateFromPPG(sortedFeatures(:,1), sortedFeatures(:,4), opts.samp_freq);
-heart_rate = (heart_rate-opts.heartRateMean)/(3*opts.heartRateSD);
+heart_rate = (heart_rate-opts.HRMean)/(3*opts.HRSD);
 inputFeatures('HR') = heart_rate;
 
 resp_rate =  getRespiratoryRateFreq(time, ppg_wave);
-resp_rate = (resp_rate-opts.respRateMean)/(3*opts.respRateSD);
+resp_rate = (resp_rate-opts.RRMean)/(3*opts.RRSD);
 inputFeatures('RespRate') = resp_rate;
 
 [PA, IPA, AI] = ppgAreaAndHeightFeatures(data(:,3), sortedFeatures);
