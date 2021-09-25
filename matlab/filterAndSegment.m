@@ -107,6 +107,7 @@ parfor idx = opts.first_record_process:opts.last_record_process
              opts.num_periods_per_segment, 3);
          
          % ***********  5. write every segment to a file *********** 
+         numFilesWritten = 0 ;
          for x = 1:length(segmentedFileData)
              out_data = segmentedFileData{x};
              out_data(:,1) = segmentedFileData{x}(:,1) - segmentedFileData{x}(1,1);
@@ -116,7 +117,8 @@ parfor idx = opts.first_record_process:opts.last_record_process
              [pearson, ~] = checkCorrelation(out_data(:,1), out_data(:,2), out_data(:,3));
              
              if (pearson >=  opts.pearson_corr_threshold)
-                outPath = opts.segmented_file_dir+fileList(idx).name(1:end-4) + "-"+num2str(x,'%0.4d')+".txt";
+                 numFilesWritten = numFilesWritten + 1;
+                outPath = opts.segmented_file_dir+fileList(idx).name(1:end-4) + "-"+num2str(numFilesWritten,'%0.4d')+".txt";
                 writematrix(out_data, outPath , 'Delimiter', 'tab');
              end
              
