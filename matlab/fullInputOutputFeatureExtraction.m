@@ -1,8 +1,8 @@
-function [inputFeatures, outputFeatures] = fullInputOutputFeatureExtraction(segmentName,opts, normalisationFactorsPath)
+function [inputFeatures, outputFeatures] = fullInputOutputFeatureExtraction(segmentName,opts)
 %UNTITLED Extraction and scaling of features from file
 %   Detailed explanation goes here
 
-normFactors = load(normalisationFactorsPath);
+normFactors = load(opts.normalisation_file_name);
 normFactors = normFactors.normFactors;
 
 dataFile = fopen(opts.segmented_file_dir + segmentName);
@@ -26,7 +26,7 @@ ppg_wave = data(:,3);
 [sys,dias,feet] = findPPGPeaks(ppg_wave, opts.samp_freq);
 sortedFeatures = sortPPGPeaks(sys, dias, feet);
 
-systolic_peak_amplitude = mean(ppg_wave(sortedFeatures(:,2)))
+systolic_peak_amplitude = mean(ppg_wave(sortedFeatures(:,2)));
 systolic_peak_amplitude = (systolic_peak_amplitude-normFactors('sysPeakAmpMean'))/(normFactors('sysPeakAmpScale'));
 inputFeatures('SysPeakAmp') = systolic_peak_amplitude;
 
@@ -64,17 +64,18 @@ inputFeatures('CT') = CT;
 
 %*************** FREQ INPUT FEATURE EXTRACTION, SCALING *****************
 
-[pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, ppg_wave, opts.num_components, opts.bandwidth_criterion);
+[pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, ppg_wave, opts.num_freq_components, opts.bandwidth_criterion);
 %SCALE POWER
-power
-inputFeatures('PPGPower') = power/(normFactors('PPGAmpMean')^2*5000);
+inputFeatures('PPGPower') = power/(normFactors('PPGPower'));
 %SCALE BW
-inputFeatures('PPGBW') = bandwidth/opts.samp_freq;
+inputFeatures('PPGBW') = bandwidth/normFactors('PPGBW');
 %SCALE FREQ COMPONENTS
-for i=1:opts.num_components
+% magNormFactorsPPG = normFactors('pkPPGMags');
+for i=1:opts.num_freq_components
     keyName = "Freq"+num2str(i, "%03.f");
-    inputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScale'); 
+    inputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScalePPG'); 
     keyName = "Mag"+num2str(i, "%03.f");
+%     inputFeatures(keyName) = pkMags(i)/magNormFactorsPPG(i);
     inputFeatures(keyName) = pkMags(i);
     keyName = "Phase"+num2str(i, "%03.f");
     inputFeatures(keyName) = pkPhases(i)/pi;
@@ -82,17 +83,18 @@ end
 
 %*************** OUTPUT FETAURE EXTRACTION, SCALING *****************
 outputFeatures = containers.Map(); 
-[pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, abp_wave, opts.num_components, opts.bandwidth_criterion);
+[pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, abp_wave, opts.num_freq_components, opts.bandwidth_criterion);
 %SCALE POWER
-power
-outputFeatures('ABPPower') = power/(normFactors('ABPAmpMean')^2*5000);
+outputFeatures('ABPPower') = power/(normFactors('ABPPower'));
 %SCALE BW
-outputFeatures('ABPBW') = bandwidth/opts.samp_freq;
+outputFeatures('ABPBW') = bandwidth/normFactors('ABPBW');
+% magNormFactorsABP = normFactors('pkABPMags');
 %SCALE FREQ COMPONENTS
-for i=1:opts.num_components
+for i=1:opts.num_freq_components
     keyName = "Freq"+num2str(i, "%03.f");
-    outputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScale'); 
+    outputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScaleABP'); 
     keyName = "Mag"+num2str(i, "%03.f");
+%     outputFeatures(keyName) = pkMags(i)/magNormFactorsABP(i);
     outputFeatures(keyName) = pkMags(i);
     keyName = "Phase"+num2str(i, "%03.f");
     outputFeatures(keyName) = pkPhases(i)/pi;
