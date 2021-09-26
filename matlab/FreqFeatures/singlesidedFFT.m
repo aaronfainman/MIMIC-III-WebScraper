@@ -20,7 +20,7 @@ function [freqVector, freqSpectrum] = singlesidedFFT(timeVector, timeSignal, pow
    
    Fs = 1/dT;
    freqVector = (0:(n/2 -1)) * (Fs/n);
-   freqSpectrum = fft(timeSignal, n)/Fs;
+   freqSpectrum = fft(timeSignal, n)./n;
    freqSpectrum(n/2+1 : end) = [];
    freqSpectrum(2:end) = freqSpectrum(2:end) * 2;
   

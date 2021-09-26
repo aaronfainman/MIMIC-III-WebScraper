@@ -21,7 +21,7 @@ time = data(:,1);
 abp_wave = data(:,2);
 ppg_wave = data(:,3);
 
-%*************** TIME INPUT FETAURE EXTRACTION, SCALING *****************
+%*************** TIME INPUT FEATURE EXTRACTION, SCALING *****************
 
 [sys,dias,feet] = findPPGPeaks(ppg_wave, opts.samp_freq);
 sortedFeatures = sortPPGPeaks(sys, dias, feet);
@@ -62,38 +62,40 @@ CT = mean((sortedFeatures(:,2)-sortedFeatures(:,1))./opts.samp_freq);
 CT = (CT-normFactors('CTMean'))/(normFactors('CTScale'));
 inputFeatures('CT') = CT;
 
-%*************** FREQ INPUT FETAURE EXTRACTION, SCALING *****************
+%*************** FREQ INPUT FEATURE EXTRACTION, SCALING *****************
 
 [pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, ppg_wave, opts.num_components, opts.bandwidth_criterion);
 %SCALE POWER
-inputFeatures('PPGPower') = power;
+power
+inputFeatures('PPGPower') = power/(normFactors('PPGAmpMean')^2*5000);
 %SCALE BW
-inputFeatures('PPGBW') = bandwidth;
+inputFeatures('PPGBW') = bandwidth/opts.samp_freq;
 %SCALE FREQ COMPONENTS
 for i=1:opts.num_components
     keyName = "Freq"+num2str(i, "%03.f");
-    inputFeatures(keyName) = pkFreqs(i); 
+    inputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScale'); 
     keyName = "Mag"+num2str(i, "%03.f");
     inputFeatures(keyName) = pkMags(i);
     keyName = "Phase"+num2str(i, "%03.f");
-    inputFeatures(keyName) = pkPhases(i);
+    inputFeatures(keyName) = pkPhases(i)/pi;
 end
 
 %*************** OUTPUT FETAURE EXTRACTION, SCALING *****************
 outputFeatures = containers.Map(); 
 [pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, abp_wave, opts.num_components, opts.bandwidth_criterion);
 %SCALE POWER
-outputFeatures('ABPPower') = power;
+power
+outputFeatures('ABPPower') = power/(normFactors('ABPAmpMean')^2*5000);
 %SCALE BW
-outputFeatures('ABPBW') = bandwidth;
+outputFeatures('ABPBW') = bandwidth/opts.samp_freq;
 %SCALE FREQ COMPONENTS
 for i=1:opts.num_components
     keyName = "Freq"+num2str(i, "%03.f");
-    outputFeatures(keyName) = pkFreqs(i); 
+    outputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScale'); 
     keyName = "Mag"+num2str(i, "%03.f");
     outputFeatures(keyName) = pkMags(i);
     keyName = "Phase"+num2str(i, "%03.f");
-    outputFeatures(keyName) = pkPhases(i);
+    outputFeatures(keyName) = pkPhases(i)/pi;
 end
 
 end
