@@ -31,14 +31,17 @@ def getRecordList(url):
 
 
 def scrape_mimic_list(record_paths,numprocs):
+    global comm
     filesDownloaded = []
     progress = 0
-    printDownloadProgress(0,len(record_paths), len(filesDownloaded) )
+    # printDownloadProgress(0,len(record_paths), len(filesDownloaded) )
+    if(comm.Get_rank()==0):
+        print("  downloading record: ")
     for record_path in record_paths:
         filesDownloaded.extend(scrape_mimic(record_path=record_path))
         progress +=1
-        printDownloadProgress(progress, len(record_paths), len(filesDownloaded) )
-    printDownloadProgress(len(record_paths),len(record_paths), len(filesDownloaded) )
+        # printDownloadProgress(progress, len(record_paths), len(filesDownloaded) )
+    # printDownloadProgress(len(record_paths),len(record_paths), len(filesDownloaded) )
     return filesDownloaded
 
 def scrape_mimic(record_path):
@@ -63,6 +66,7 @@ def scrape_mimic(record_path):
         #use --no-parent otherwise you will download all directory files
         # -q suppresses command line output of download
         filePath = record_path + record
+        print("\t "+ record, end="\r")
         download_cmd = "wget -r -q --no-parent " + ROOTURL + "/" + filePath;
         
         # For use with Windows (with WSL) add wsl add beginning of system command
@@ -105,7 +109,8 @@ def convertToText(dataFileList, numprocs):
             #rdsamp: to text is -p > newName.txt
             # -s : signal list is ABP, PLETH in that order => output cols will be TIME-ABP-PLETH
             # -S : search for first valid time for ABP
-            rdsamp_cmd = "taskkill /im rdsamp -r " + filePath +" -p > " + filePath + ".txt -s ABP PLETH -S ABP /f >/dev/null 2>&1"
+            # rdsamp_cmd = "taskkill /im rdsamp -r " + filePath +" -p > " + filePath + ".txt -s ABP PLETH -S ABP /f >/dev/null 2>&1"
+            rdsamp_cmd = "rdsamp -r " + filePath +" -p > " + filePath + ".txt -s ABP PLETH -S ABP "
             if not IS_POSIX: 
                 rdsamp_cmd = "wsl " + rdsamp_cmd
 
@@ -115,7 +120,7 @@ def convertToText(dataFileList, numprocs):
             # print('CONVERTING TO TXT COMPLETE -- ' + filePath)
             # move converted files to new folder
         
-            move_cmd = "taskkill /im mv " + filePath +".txt " + TEXTDATAFOLDER + "/f >/dev/null 2>&1"
+            move_cmd = "mv " + filePath +".txt " + TEXTDATAFOLDER
             if not IS_POSIX:
                 move_cmd = "wsl "+ move_cmd
             # print(move_cmd)
