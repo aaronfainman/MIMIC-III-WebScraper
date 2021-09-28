@@ -11,8 +11,8 @@ ROOT = "./"
 ROOTURL = "https://physionet.org/files/mimic3wdb/1.0"
 ROOTFOLDER = ROOT + "physionet.org/files/mimic3wdb/1.0/"
 NUMTHREADS = 8
-TEXTDATAFOLDER = ROOT + "/physionet.org/textdata/"
-ABPANNFOLDER = ROOT + "/physionet.org/abp_ann/"
+TEXTDATAFOLDER = ROOT + "physionet.org/textdata/"
+ABPANNFOLDER = ROOT + "physionet.org/abp_ann/"
 
 comm = MPI.COMM_WORLD
 
@@ -248,11 +248,14 @@ if __name__ == '__main__':
     if len(sys.argv) > 3:
         end_download_idx = int(sys.argv[3])
     else:
-        end_download_idx = 5;
+        end_download_idx = -1;
 
     if rank == 0:
         allRecordPaths = getRecordList(ROOTURL)
-        allRecordPaths = allRecordPaths[start_download_idx:end_download_idx]
+        if end_download_idx > 0:
+            allRecordPaths = allRecordPaths[start_download_idx:end_download_idx]
+        else:
+            allRecordPaths = allRecordPaths[start_download_idx:]
         amountToProc = len(allRecordPaths)//numprocs
         sendRecs = []
         #MPI scatter requires scattering a list with num elements equal to num proceses
