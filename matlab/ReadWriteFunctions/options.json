@@ -29,6 +29,8 @@
     "num_periods_per_segment":50,
     "normalisation_file_name":"NormalisationFactors.mat",
     "bandwidth_criterion":0.99,
-    "num_freq_components":200
+    "num_freq_components":200,
+    "input_feature_file": "../physionet.org/inputFeatures.csv",
+    "output_feature_file": "../physionet.org/outputFeatures.csv"
 }
 
