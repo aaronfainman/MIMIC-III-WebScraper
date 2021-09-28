@@ -245,10 +245,11 @@ if __name__ == '__main__':
         end_download_idx = -1;
 
     if rank == 0:
+        if not os.path.isdir(ROOT)
         if not os.path.isdir(TEXTDATAFOLDER):
-            os.mkdir(TEXTDATAFOLDER)
+            os.makedirs(TEXTDATAFOLDER)
         if not os.path.isdir(ABPANNFOLDER):
-            os.mkdir(ABPANNFOLDER)
+            os.makedirs(ABPANNFOLDER)
 
         allRecordPaths = getRecordList(ROOTURL)
         if end_download_idx > 0:
