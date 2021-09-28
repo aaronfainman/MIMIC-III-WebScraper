@@ -96,9 +96,6 @@ def getListOfFiles(inFolder, ext):
 
 def convertToText(dataFileList, numprocs):
     fileThreshold = 17*1024
-
-    if not os.path.isdir(TEXTDATAFOLDER):
-        os.mkdir(TEXTDATAFOLDER)
     
     progress = 0;
     for record in dataFileList:
@@ -132,9 +129,6 @@ def convertToText(dataFileList, numprocs):
 
 def extractAbpBeats(fileList):
     # Generate wabp files and extract to text:
-  
-    if not os.path.isdir(ABPANNFOLDER):
-        os.mkdir(ABPANNFOLDER)
 
     progress = 0;
     for f in fileList:
@@ -251,6 +245,11 @@ if __name__ == '__main__':
         end_download_idx = -1;
 
     if rank == 0:
+        if not os.path.isdir(TEXTDATAFOLDER):
+            os.mkdir(TEXTDATAFOLDER)
+        if not os.path.isdir(ABPANNFOLDER):
+            os.mkdir(ABPANNFOLDER)
+
         allRecordPaths = getRecordList(ROOTURL)
         if end_download_idx > 0:
             allRecordPaths = allRecordPaths[start_download_idx:end_download_idx]
@@ -258,6 +257,7 @@ if __name__ == '__main__':
             allRecordPaths = allRecordPaths[start_download_idx:]
         amountToProc = len(allRecordPaths)//numprocs
         sendRecs = []
+
         #MPI scatter requires scattering a list with num elements equal to num proceses
         # reshape the list of records into a list of lists where number of lists equals num processes
         # and within each list the number of elements varies
