@@ -6,11 +6,13 @@ import numpy as np
 # import math
 import sys
 
+ROOT = "./"
+
 ROOTURL = "https://physionet.org/files/mimic3wdb/1.0"
-ROOTFOLDER = "./physionet.org/files/mimic3wdb/1.0/"
+ROOTFOLDER = ROOT + "physionet.org/files/mimic3wdb/1.0/"
 NUMTHREADS = 8
-TEXTDATAFOLDER = './physionet.org/textdata/'
-ABPANNFOLDER = "./physionet.org/abp_ann/"
+TEXTDATAFOLDER = ROOT + "/physionet.org/textdata/"
+ABPANNFOLDER = ROOT + "/physionet.org/abp_ann/"
 
 comm = MPI.COMM_WORLD
 
