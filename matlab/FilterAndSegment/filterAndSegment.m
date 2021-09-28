@@ -34,12 +34,12 @@ else
     end
 end
 
-if ~isfolder(opts.segmented_abp_dir)
-    mkdir(opts.segmented_abp_dir)
-else
-    rmdir(opts.segmented_abp_dir, 's')
-    mkdir(opts.segmented_abp_dir)
-end
+% if ~isfolder(opts.segmented_abp_dir)
+%     mkdir(opts.segmented_abp_dir)
+% else
+%     rmdir(opts.segmented_abp_dir, 's')
+%     mkdir(opts.segmented_abp_dir)
+% end
 
 
 %Filter transfer function
@@ -55,13 +55,13 @@ end
 
 parfor idx = opts.first_record_process:opts.last_record_process
     % *********** 1. open both data and ABP files ***********  
-     dataFile = fopen(opts.orig_file_dir + fileList(idx).name);
+
+     dataFile = fopen( opts.orig_file_dir + fileList(idx).name );
      data = cell2mat(textscan( dataFile, ...
          '%f %f %f', 'TreatAsEmpty', '-', 'EmptyValue', 0));
      fclose(dataFile);
 
-     
-     abpAnnFile = fopen([opts.abp_ann_dir fileList(idx).name(1:end-4) '_abp.txt']);
+     abpAnnFile = fopen([opts.abp_ann_dir+ fileList(idx).name(1:end-4)+ "_abp.txt"]);
      locOfAbpBeats = cell2mat(textscan( abpAnnFile, ...
          '%*s %d %*s %*d %*d %*d'));
      fclose(abpAnnFile);

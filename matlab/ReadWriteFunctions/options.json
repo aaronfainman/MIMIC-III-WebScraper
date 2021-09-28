@@ -4,25 +4,31 @@
     "segmented_file_dir":"../physionet.org/segmented_data/",
     "clear_segmented_dir":false,
     "segmented_abp_dir":"../physionet.org/segmented_abp_beats/",
-    "first_record_process":180,
-    "last_record_process":185,
-    "apply_filter":false,
+    "first_record_process":1,
+    "last_record_process":-1,
+    "apply_ppg_filter":true,
     "samp_freq":125,
     "filter":{
-        "type":"low",
-        "cutoff":15,
-        "order":3
-    },
-    "apply_hampel_abp":false,
+        "type":"lowpassiir",
+        "cutoff":30,
+        "order":6},
+    "apply_hampel_abp":true,
     "apply_hampel_ppg":true,
     "flats":{
-        "derivative_thresh":0.001,
-        "window":300,
-        "window_thresh":0.5
+        "derivative_thresh":0.004,
+        "window":400,
+        "window_thresh":0.4
     },
     "min_region_length":7500,
-    "num_periods_per_segment":20,
+    "ranges":{
+        "sbp_range":[80,180],
+        "dbp_range":[60,130],
+        "window_length":120
+    },
+    "pearson_corr_threshold":0.8,
+    "num_periods_per_segment":50,
     "normalisation_file_name":"NormalisationFactors.mat",
     "bandwidth_criterion":0.99,
     "num_freq_components":200
 }
+
