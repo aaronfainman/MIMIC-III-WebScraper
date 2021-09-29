@@ -5,6 +5,7 @@ from mpi4py import MPI
 import numpy as np
 # import math
 import sys
+import datetime
 
 ROOT = "./"
 
@@ -13,6 +14,7 @@ ROOTFOLDER = ROOT + "physionet.org/files/mimic3wdb/1.0/"
 NUMTHREADS = 8
 TEXTDATAFOLDER = ROOT + "physionet.org/textdata/"
 ABPANNFOLDER = ROOT + "physionet.org/abp_ann/"
+FILESDOWNLOADEDRECORD = ROOT+"physionet.org/files_downloaded.txt"
 
 comm = MPI.COMM_WORLD
 
@@ -245,11 +247,18 @@ if __name__ == '__main__':
         end_download_idx = -1;
 
     if rank == 0:
-        if not os.path.isdir(ROOT)
         if not os.path.isdir(TEXTDATAFOLDER):
             os.makedirs(TEXTDATAFOLDER)
         if not os.path.isdir(ABPANNFOLDER):
             os.makedirs(ABPANNFOLDER)
+
+        allRecordPaths = getRecordList(ROOTURL)
+        if end_download_idx > 0:
+            allRecordPaths = allRecordPaths[start_download_idx:end_download_idx]
+        else:
+            allRecordPaths = allRecordPaths[start_download_idx:]
+        amountToProc = len(allRecordPaths)//numprocs
+        sendRecs = []
 
         allRecordPaths = getRecordList(ROOTURL)
         if end_download_idx > 0:
@@ -270,13 +279,26 @@ if __name__ == '__main__':
     
     myRecords = []
     myRecords = comm.scatter(sendRecs, root=0)
+
+    if rank==0 and download_files_flag:
+        with open(FILESDOWNLOADEDRECORD, "a") as file_obj:
+            rec_update_str = str(start_download_idx)+"-" + str(end_download_idx) +" "+ str(datetime.datetime.now().day) + "\\" + str(datetime.datetime.now().month)+ " -- request \n"
+            file_obj.write(rec_update_str)
+
     
     if download_files_flag!=0:
         print("\nBeginning downloads.") if rank==0 else 0
         scrape_mimic_list(myRecords, numprocs)
         print("\nDownloads complete.") if rank==0 else 0
 
+    if rank==0 and download_files_flag:
+        with open(FILESDOWNLOADEDRECORD, "a") as file_obj:
+            rec_update_str = str(start_download_idx)+"-" + str(end_download_idx) +" "+ str(datetime.datetime.now().day) + "\\" + str(datetime.datetime.now().month)+ " -- complete \n"
+            file_obj.write(rec_update_str)
+
     comm.Barrier()
+
+
     
     datfileList = getListOfFiles(ROOTFOLDER, '.dat')
     numRecords = len(datfileList)//numprocs
@@ -284,7 +306,6 @@ if __name__ == '__main__':
         datfileList = datfileList[rank*numRecords:]
     else:
         datfileList = datfileList[rank*numRecords:(rank+1)*numRecords]
-
 
     print("Converting to text") if rank==0 else 0;
     convertToText(datfileList,numprocs)
