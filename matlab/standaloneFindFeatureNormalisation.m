@@ -79,7 +79,7 @@ parfor (idx = 1:numFiles)
 
     [pkIndices, pkFreqsCurr, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(data(:,1), data(:,2), opts.num_freq_components, opts.bandwidth_criterion);
     pkABPFreqs(idx, :) = max(pkFreqsCurr);
-    if(numel(pkMags) < opts.num_freq_components)
+    if(numel(pkMags) < opts.num_freq_components+1)
         pkMags = zeropad(pkMags, opts.num_freq_components-numel(pkMags)+1, "post" );
     end
     pkABPMags(idx, :) = pkMags';
@@ -88,8 +88,8 @@ parfor (idx = 1:numFiles)
 
     [pkIndices, pkFreqsCurr, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(data(:,1), data(:,3), opts.num_freq_components, opts.bandwidth_criterion);
     pkPPGFreqs(idx, :) = max(pkFreqsCurr);
-    if(numel(pkMags) < opts.num_freq_components)
-        pkMags = zeropad(pkMags, opts.num_freq_components-numel(pkMags)+1,"post" );
+    if(length(pkMags) < opts.num_freq_components+1)
+        pkMags = zeropad(pkMags, opts.num_freq_components-length(pkMags)+1,"post" );
     end
     pkPPGMags(idx, :) = pkMags';
     PPGPower(idx, :) = power;
