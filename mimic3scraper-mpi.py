@@ -51,11 +51,19 @@ def scrape_mimic(record_path):
     filesDownloaded = []
     #Will look in each record's general layout file for presence of an ABP and PLETH waveform
     #    if it exists then will download file
-    RecordsInFolderRequest = requests.get(ROOTURL + "/" + record_path + "/RECORDS")
+    try:
+        RecordsInFolderRequest = requests.get(ROOTURL + "/" + record_path + "RECORDS")
+    except:
+        return []
+
     all_records_in_folder = str(BeautifulSoup(RecordsInFolderRequest.text, 'html.parser')).splitlines()
 
     for record in all_records_in_folder:
-        HeaderRequest = requests.get(ROOTURL + "/" + record_path + record + ".hea")
+        try:
+            HeaderRequest = requests.get(ROOTURL + "/" + record_path + record + ".hea")
+        except:
+            continue
+            
         soup_layout = BeautifulSoup(HeaderRequest.text, 'html.parser')
         signalData = str(soup_layout).splitlines()[1:]
         signalList = []
@@ -69,20 +77,23 @@ def scrape_mimic(record_path):
         # -q suppresses command line output of download
         filePath = record_path + record
         print("\t "+ record, end="\r")
-        download_cmd = "wget -r -q --no-parent " + ROOTURL + "/" + filePath;
+        download_cmd = "wget -r -q --no-parent " + ROOTURL + "/" + filePath
         
         # For use with Windows (with WSL) add wsl add beginning of system command
         if not IS_POSIX: 
             download_cmd = "wsl "+ download_cmd
 
         #check if files have already been downloaded otherwise download them
-        if not os.path.isfile(ROOTFOLDER+filePath+".dat"):
-            # print("DOWNLOADING -- " + filePath )
-            os.system(download_cmd +".dat") #fg; echo DOWNLOADED
-        if not os.path.isfile(ROOTFOLDER+filePath+".hea"):
-            # print("DOWNLOADING -- " + filePath )
-            os.system(download_cmd +".hea") #fg; echo DOWNLOADED
-        # print("DOWNLOAD COMPLETE -- " + filePath)
+        try:
+            if not os.path.isfile(ROOTFOLDER+filePath+".dat"):
+                # print("DOWNLOADING -- " + filePath )
+                os.system(download_cmd +".dat") #fg; echo DOWNLOADED
+            if not os.path.isfile(ROOTFOLDER+filePath+".hea"):
+                # print("DOWNLOADING -- " + filePath )
+                os.system(download_cmd +".hea") #fg; echo DOWNLOADED
+            # print("DOWNLOAD COMPLETE -- " + filePath)
+        except:
+            continue
         filesDownloaded.append(record)
 
     return filesDownloaded
@@ -97,11 +108,11 @@ def getListOfFiles(inFolder, ext):
 def convertToText(dataFileList, numprocs):
     fileThreshold = 17*1024
     
-    progress = 0;
+    progress = 0
     for record in dataFileList:
         filePath = ROOTFOLDER+record
         fileSize =  os.path.getsize(filePath+'.dat')
-        progress += 1;
+        progress += 1
         printCollectiveProgress(progress/len(datfileList), numprocs, "Conversion Progress")
         if fileSize > fileThreshold:
             # Convert to TXT
@@ -130,7 +141,7 @@ def convertToText(dataFileList, numprocs):
 def extractAbpBeats(fileList):
     # Generate wabp files and extract to text:
 
-    progress = 0;
+    progress = 0
     for f in fileList:
         # print('EXTRACTING ABP -- ' + f)
         # wabp_cmd = "taskkill /im  wabp -r " + ROOTFOLDER + f + " /f >null 2>&1"
@@ -153,11 +164,11 @@ def extractAbpBeats(fileList):
 
 def printCollectiveProgress(numerator, denominator, message,):
     global comm
-    coll_progress = comm.gather(numerator, root=0);
+    coll_progress = comm.gather(numerator, root=0)
     if comm.Get_rank()!=0:
-        return 0;
+        return 0
     
-    perc_progress = int(sum(coll_progress)*100//denominator);
+    perc_progress = int(sum(coll_progress)*100//denominator)
 
     progress_text = "|"
     for i in range(perc_progress//5):
@@ -234,18 +245,17 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         download_files_flag = int(sys.argv[1])
     else:
-        download_files_flag = 1;
+        download_files_flag = 1
     if len(sys.argv) > 2:
         start_download_idx = int(sys.argv[2])
     else:
-        start_download_idx = 0;
+        start_download_idx = 0
     if len(sys.argv) > 3:
         end_download_idx = int(sys.argv[3])
     else:
-        end_download_idx = -1;
+        end_download_idx = -1
 
     if rank == 0:
-        if not os.path.isdir(ROOT)
         if not os.path.isdir(TEXTDATAFOLDER):
             os.makedirs(TEXTDATAFOLDER)
         if not os.path.isdir(ABPANNFOLDER):
@@ -286,11 +296,11 @@ if __name__ == '__main__':
         datfileList = datfileList[rank*numRecords:(rank+1)*numRecords]
 
 
-    print("Converting to text") if rank==0 else 0;
+    print("Converting to text") if rank==0 else 0
     convertToText(datfileList,numprocs)
 
-    print("\nExtracting ABP") if rank==0 else 0;
+    print("\nExtracting ABP") if rank==0 else 0
     extractAbpBeats(datfileList)
-    print("\nABP extraction complete") if rank==0 else 0;
-    print("Completed successfully") if rank ==0 else 0;
+    print("\nABP extraction complete") if rank==0 else 0
+    print("Completed successfully") if rank ==0 else 0
 
