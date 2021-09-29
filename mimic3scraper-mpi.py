@@ -96,7 +96,11 @@ def scrape_mimic(record_path):
             # print("DOWNLOAD COMPLETE -- " + filePath)
         except:
             continue
+        # print(record_path)
+        convertSingleFileToText(record_path+record)
+        extractSingleAbpBeatFile(record_path+record)
         filesDownloaded.append(record)
+
 
     return filesDownloaded
 
@@ -136,6 +140,7 @@ def convertFileListToText(dataFileList, numprocs):
         printCollectiveProgress(progress/len(dataFileList), numprocs, "Conversion Progress")
     printCollectiveProgress(1, numprocs, "Conversion Progress")
 
+
 def extractSingleAbpBeatFile(record):
     wabp_cmd = "wabp -r " + ROOTFOLDER + record
     if not IS_POSIX:
@@ -150,7 +155,6 @@ def extractSingleAbpBeatFile(record):
 
 def extractAbpBeatsList(fileList):
     # Generate wabp files and extract to text:
-
     progress = 0
     for f in fileList:
         extractSingleAbpBeatFile(f)
@@ -177,50 +181,13 @@ def printCollectiveProgress(numerator, denominator, message,):
     print(" ",message,":", progress_text, perc_progress, "%",end='\r')
 
 
-coll_folders_examined = [0 for i in range(0, comm.Get_size())]
-coll_folders_required = [0 for i in range(0, comm.Get_size())]
-coll_files_downloaded = [0 for i in range(0, comm.Get_size())]
+
 def printDownloadProgress(numFoldersExamined, numFoldersInRecord, numFilesDownloaded):
     global comm
-    # global coll_folders_required
-    # global coll_folders_examined
-    # global coll_files_downloaded
-    
-    # numprocs = comm.Get_size()
     rank = comm.Get_rank()
 
-    # if rank!=0:
-    #     req_examined = comm.isend(numFoldersExamined, dest=0, tag=0)
-    #     req_examined.wait()
-    #     req_required = comm.isend(numFoldersInRecord, dest=0, tag=1)
-    #     req_required.wait()
-    #     req_downloaded = comm.isend(numFilesDownloaded, dest=0, tag=2)
-    #     req_downloaded.wait()
-    #     return 0
-
-    # for src in range(1,numprocs):
-    #     req_examined = comm.irecv(source=src, tag=0)
-    #     temp_ex =  req_examined.wait() 
-    #     req_required = comm.irecv(source=src, tag=1)
-    #     temp_req = req_required.wait()
-    #     req_downloaded = comm.irecv(source=src, tag=2)
-    #     temp_down = req_downloaded.wait()
-    #     coll_folders_examined[src] = temp_ex if temp_ex != 0 else coll_folders_examined[src]
-    #     coll_folders_required[src] = temp_req if temp_req != 0 else coll_folders_required[src]
-    #     coll_files_downloaded[src] = temp_down if temp_down != 0 else coll_files_downloaded[src]
-    
-    # coll_folders_examined[0] = numFoldersExamined
-    # coll_folders_required[0] = numFoldersInRecord
-    # coll_files_downloaded[0] = numFilesDownloaded
-
-    # num_folders_examined = sum(coll_folders_examined)
-    # num_folders_required = sum(coll_folders_required)
-    # num_files_downloaded = sum(coll_files_downloaded)
-
-    # perc_progress = num_folders_examined//num_folders_required*100
     if rank != 0:
         return -1
-    # ************* currently just use rank 0's progress as approximation for download progress
     perc_progress = numFoldersExamined*100//numFoldersInRecord
     progress_text = "|"
     for i in range(perc_progress//5):
@@ -228,9 +195,9 @@ def printDownloadProgress(numFoldersExamined, numFoldersInRecord, numFilesDownlo
     for i in range(perc_progress//5,20):
         progress_text += "-"
     progress_text += "|"
-
-    # print(" Download Progress: ", progress_text, " ", num_folders_examined, "/", num_folders_required, " folders examined. ",num_files_downloaded, " files downloaded",end='\r\r')
     print(" Download progress:", progress_text, perc_progress, "%",end='\r')
+
+
 
 def fullConversionAndExtraction():
     datfileList = getListOfFiles(ROOTFOLDER, '.dat')
@@ -323,19 +290,5 @@ if __name__ == '__main__':
 
     if not download_files_flag:
         fullConversionAndExtraction()
-    
-    # datfileList = getListOfFiles(ROOTFOLDER, '.dat')
-    # numRecords = len(datfileList)//numprocs
-    # if rank == numprocs:
-    #     datfileList = datfileList[rank*numRecords:]
-    # else:
-    #     datfileList = datfileList[rank*numRecords:(rank+1)*numRecords]
 
-    # print("Converting to text") if rank==0 else 0
-    # convertFileListToText(datfileList,numprocs)
-
-    # print("\nExtracting ABP") if rank==0 else 0
-    # extractAbpBeatsList(datfileList)
-    # print("\nABP extraction complete") if rank==0 else 0
-    # print("Completed successfully") if rank ==0 else 0
 
