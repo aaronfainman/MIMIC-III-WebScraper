@@ -254,7 +254,7 @@ if __name__ == '__main__':
         allRecordPaths = getRecordList(ROOTURL)
         if end_download_idx > 0:
             allRecordPaths = allRecordPaths[start_download_idx:end_download_idx]
-        else
+        else:
             allRecordPaths = allRecordPaths[start_download_idx:]
         amountToProc = len(allRecordPaths)//numprocs
         sendRecs = []
