@@ -107,61 +107,57 @@ def getListOfFiles(inFolder, ext):
             fileList.append(os.path.join(filename[0:2],filename[0:7], filename[0:12]))
     return fileList
 
-def convertToText(dataFileList, numprocs):
+
+def convertSingleFileToText(record):
+    fileThreshold = 17*1024
+
+    filePath = ROOTFOLDER+record
+    fileSize =  os.path.getsize(filePath+'.dat')
+    if fileSize > fileThreshold:
+            rdsamp_cmd = "rdsamp -r " + filePath +" -p > " + filePath + ".txt -s ABP PLETH -S ABP "
+            if not IS_POSIX: 
+                rdsamp_cmd = "wsl " + rdsamp_cmd
+            os.system(rdsamp_cmd)
+
+            move_cmd = "mv " + filePath +".txt " + TEXTDATAFOLDER
+            if not IS_POSIX:
+                move_cmd = "wsl "+ move_cmd
+            os.system( move_cmd )
+
+
+
+def convertFileListToText(dataFileList, numprocs):
     fileThreshold = 17*1024
     
     progress = 0
     for record in dataFileList:
-        filePath = ROOTFOLDER+record
-        fileSize =  os.path.getsize(filePath+'.dat')
+        convertSingleFileToText(record)
         progress += 1
-        printCollectiveProgress(progress/len(datfileList), numprocs, "Conversion Progress")
-        if fileSize > fileThreshold:
-            # Convert to TXT
-            #rdsamp: to text is -p > newName.txt
-            # -s : signal list is ABP, PLETH in that order => output cols will be TIME-ABP-PLETH
-            # -S : search for first valid time for ABP
-            # rdsamp_cmd = "taskkill /im rdsamp -r " + filePath +" -p > " + filePath + ".txt -s ABP PLETH -S ABP /f >/dev/null 2>&1"
-            rdsamp_cmd = "rdsamp -r " + filePath +" -p > " + filePath + ".txt -s ABP PLETH -S ABP "
-            if not IS_POSIX: 
-                rdsamp_cmd = "wsl " + rdsamp_cmd
-
-            # print('CONVERTING TO TXT -- ' + filePath)
-            # print(rdsamp_cmd)
-            os.system(rdsamp_cmd)
-            # print('CONVERTING TO TXT COMPLETE -- ' + filePath)
-            # move converted files to new folder
-        
-            move_cmd = "mv " + filePath +".txt " + TEXTDATAFOLDER
-            if not IS_POSIX:
-                move_cmd = "wsl "+ move_cmd
-            # print(move_cmd)
-            os.system( move_cmd )
+        printCollectiveProgress(progress/len(dataFileList), numprocs, "Conversion Progress")
     printCollectiveProgress(1, numprocs, "Conversion Progress")
-        
 
-def extractAbpBeats(fileList):
+def extractSingleAbpBeatFile(record):
+    wabp_cmd = "wabp -r " + ROOTFOLDER + record
+    if not IS_POSIX:
+        wabp_cmd = "wsl "+ wabp_cmd
+    os.system(wabp_cmd)
+
+    wabp_cmd = "rdann -r " + ROOTFOLDER + record + " -a wabp >" + ABPANNFOLDER + record[11:]+"_abp.txt"
+    if not IS_POSIX:
+        wabp_cmd = "wsl "+ wabp_cmd
+    os.system(wabp_cmd) 
+
+
+def extractAbpBeatsList(fileList):
     # Generate wabp files and extract to text:
 
     progress = 0
     for f in fileList:
-        # print('EXTRACTING ABP -- ' + f)
-        # wabp_cmd = "taskkill /im  wabp -r " + ROOTFOLDER + f + " /f >null 2>&1"
-        wabp_cmd = "wabp -r " + ROOTFOLDER + f
-        if not IS_POSIX:
-            wabp_cmd = "wsl "+ wabp_cmd
-        os.system(wabp_cmd)
-        #output from command suppressed using: taskkill /im <rdann command> /f >null 2>&1
-        # wabp_cmd = "taskkill /im rdann -r " + ROOTFOLDER + f + " -a wabp >" + ABPANNFOLDER + f[11:]+"_abp.txt /f >null 2>&1"
-        wabp_cmd = "rdann -r " + ROOTFOLDER + f + " -a wabp >" + ABPANNFOLDER + f[11:]+"_abp.txt"
-        if not IS_POSIX:
-            wabp_cmd = "wsl "+ wabp_cmd
-        os.system(wabp_cmd) 
-        
+        extractSingleAbpBeatFile(f)
         progress += 1
         printCollectiveProgress(progress/len(fileList), numprocs, "ABP Extraction Progress")
     printCollectiveProgress(1, numprocs, "ABP Extraction Progress")
-        # print('ABP EXTRACTION COMPLETE -- ' + f)
+
 
 
 def printCollectiveProgress(numerator, denominator, message,):
@@ -236,6 +232,22 @@ def printDownloadProgress(numFoldersExamined, numFoldersInRecord, numFilesDownlo
     # print(" Download Progress: ", progress_text, " ", num_folders_examined, "/", num_folders_required, " folders examined. ",num_files_downloaded, " files downloaded",end='\r\r')
     print(" Download progress:", progress_text, perc_progress, "%",end='\r')
 
+def fullConversionAndExtraction():
+    datfileList = getListOfFiles(ROOTFOLDER, '.dat')
+    numRecords = len(datfileList)//numprocs
+    if rank == numprocs:
+        datfileList = datfileList[rank*numRecords:]
+    else:
+        datfileList = datfileList[rank*numRecords:(rank+1)*numRecords]
+
+    print("Converting to text") if rank==0 else 0
+    convertFileListToText(datfileList,numprocs)
+
+    print("\nExtracting ABP") if rank==0 else 0
+    extractAbpBeatsList(datfileList)
+    print("\nABP extraction complete") if rank==0 else 0
+    print("Completed successfully") if rank ==0 else 0
+
 
 
 if __name__ == '__main__':
@@ -309,20 +321,21 @@ if __name__ == '__main__':
             rec_update_str = str(start_download_idx)+"-" + str(end_download_idx) +" "+ str(datetime.datetime.now().strftime("%m/%d %H:%M:%S")) + " -- complete \n"
             file_obj.write(rec_update_str)
 
-
+    if not download_files_flag:
+        fullConversionAndExtraction()
     
-    datfileList = getListOfFiles(ROOTFOLDER, '.dat')
-    numRecords = len(datfileList)//numprocs
-    if rank == numprocs:
-        datfileList = datfileList[rank*numRecords:]
-    else:
-        datfileList = datfileList[rank*numRecords:(rank+1)*numRecords]
+    # datfileList = getListOfFiles(ROOTFOLDER, '.dat')
+    # numRecords = len(datfileList)//numprocs
+    # if rank == numprocs:
+    #     datfileList = datfileList[rank*numRecords:]
+    # else:
+    #     datfileList = datfileList[rank*numRecords:(rank+1)*numRecords]
 
-    print("Converting to text") if rank==0 else 0
-    convertToText(datfileList,numprocs)
+    # print("Converting to text") if rank==0 else 0
+    # convertFileListToText(datfileList,numprocs)
 
-    print("\nExtracting ABP") if rank==0 else 0
-    extractAbpBeats(datfileList)
-    print("\nABP extraction complete") if rank==0 else 0
-    print("Completed successfully") if rank ==0 else 0
+    # print("\nExtracting ABP") if rank==0 else 0
+    # extractAbpBeatsList(datfileList)
+    # print("\nABP extraction complete") if rank==0 else 0
+    # print("Completed successfully") if rank ==0 else 0
 
