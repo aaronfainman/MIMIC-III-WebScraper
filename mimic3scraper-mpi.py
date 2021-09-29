@@ -293,7 +293,7 @@ if __name__ == '__main__':
 
     if rank==0 and download_files_flag:
         with open(FILESDOWNLOADEDRECORD, "a") as file_obj:
-            rec_update_str = str(start_download_idx)+"-" + str(end_download_idx) +" "+ str(datetime.datetime.now().day) + "\\" + str(datetime.datetime.now().month)+ " -- request \n"
+            rec_update_str = str(start_download_idx)+"-" + str(end_download_idx) +" "+ str(datetime.datetime.now().day) + "/" + str(datetime.datetime.now().month)+ " -- request \n"
             file_obj.write(rec_update_str)
 
     
@@ -304,7 +304,7 @@ if __name__ == '__main__':
 
     if rank==0 and download_files_flag:
         with open(FILESDOWNLOADEDRECORD, "a") as file_obj:
-            rec_update_str = str(start_download_idx)+"-" + str(end_download_idx) +" "+ str(datetime.datetime.now().day) + "\\" + str(datetime.datetime.now().month)+ " -- complete \n"
+            rec_update_str = str(start_download_idx)+"-" + str(end_download_idx) +" "+ str(datetime.datetime.now().day) + "/" + str(datetime.datetime.now().month)+ " -- complete \n"
             file_obj.write(rec_update_str)
 
     comm.Barrier()
