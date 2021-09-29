@@ -42,6 +42,7 @@ def scrape_mimic_list(record_paths,numprocs):
     if(comm.Get_rank()==0):
         print("  downloading record: ")
     for record_path in record_paths:
+        print(record_path)
         filesDownloaded.extend(scrape_mimic(record_path=record_path))
         progress +=1
         # printDownloadProgress(progress, len(record_paths), len(filesDownloaded) )
@@ -253,7 +254,7 @@ if __name__ == '__main__':
         allRecordPaths = getRecordList(ROOTURL)
         if end_download_idx > 0:
             allRecordPaths = allRecordPaths[start_download_idx:end_download_idx]
-        else:
+        else
             allRecordPaths = allRecordPaths[start_download_idx:]
         amountToProc = len(allRecordPaths)//numprocs
         sendRecs = []
