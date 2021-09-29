@@ -31,6 +31,9 @@
     "bandwidth_criterion":0.99,
     "num_freq_components":200,
     "input_feature_file": "../physionet.org/inputFeatures.csv",
-    "output_feature_file": "../physionet.org/outputFeatures.csv"
+    "output_feature_file": "../physionet.org/outputFeatures.csv",
+    "overwrite_feature_files": false,
+    "start_idx_segment2feature": 1818,
+    "end_idx_segment2feature": -1
 }
 
