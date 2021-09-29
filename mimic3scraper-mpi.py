@@ -282,7 +282,7 @@ if __name__ == '__main__':
         scrape_mimic_list(myRecords, numprocs)
         print("\nDownloads complete.") if rank==0 else 0
 
-    comm.Barrier()
+    # comm.Barrier()
 
     if rank==0 and download_files_flag:
         with open(FILESDOWNLOADEDRECORD, "a") as file_obj:
