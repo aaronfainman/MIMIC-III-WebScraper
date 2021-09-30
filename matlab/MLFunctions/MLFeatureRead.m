@@ -40,7 +40,7 @@ outputMissingRows = find(any(ismissing(outputFeats),2));
 allMissingRows = [inputMissingRows; outputMissingRows];
 inputFeats(allMissingRows, :) = [];
 outputFeats(allMissingRows, :) = [];
-fprintf("Removed %i rows from data", length(allMissingRows)); end;
+fprintf("Removed %i rows from data", length(allMissingRows)); 
 
 normFactors = load('NormalisationFactors.mat');
 normFactors = normFactors.normFactors;
