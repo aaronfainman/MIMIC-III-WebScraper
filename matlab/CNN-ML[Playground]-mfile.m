@@ -35,23 +35,38 @@ end
 %%
 numOutputs = size(bp_output,2);
 
+% layers = [
+%     imageInputLayer([1024 1024 3])
+%     convolution2dLayer(3,8,'Padding','same')
+%     batchNormalizationLayer
+%     reluLayer
+%     averagePooling2dLayer(2,'Stride',2)
+%     convolution2dLayer(3,16,'Padding','same')
+%     batchNormalizationLayer
+%     reluLayer
+%     averagePooling2dLayer(2,'Stride',2)
+%     convolution2dLayer(3,32,'Padding','same')
+%     batchNormalizationLayer
+%     reluLayer
+%     convolution2dLayer(3,32,'Padding','same')
+%     batchNormalizationLayer
+%     reluLayer
+%     dropoutLayer(0.2)
+%     fullyConnectedLayer(numOutputs)
+%     regressionLayer];
+
 layers = [
     imageInputLayer([1024 1024 3])
     convolution2dLayer(3,8,'Padding','same')
     batchNormalizationLayer
     reluLayer
-    averagePooling2dLayer(2,'Stride',2)
     convolution2dLayer(3,16,'Padding','same')
     batchNormalizationLayer
     reluLayer
-    averagePooling2dLayer(2,'Stride',2)
-    convolution2dLayer(3,32,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
-    convolution2dLayer(3,32,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
     dropoutLayer(0.2)
+    convolution2dLayer(3,32,'Padding','same')
+    batchNormalizationLayer
+    reluLayer
     fullyConnectedLayer(numOutputs)
     regressionLayer];
 
