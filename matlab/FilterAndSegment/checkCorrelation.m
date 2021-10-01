@@ -14,6 +14,10 @@ elseif (shift < 0)
     abp_shift = abp(-shift:end);
     ppg_shift = ppg(1:length(abp_shift));
     t_shift = t(1:length(abp_shift));
+else
+    ppg_shift = ppg;
+    abp_shift = abp;
+    t_shift = t;
 end
 
 pearsonCorrCoeff = pearsonCoeff(ppg_shift, abp_shift);
