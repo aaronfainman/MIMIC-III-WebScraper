@@ -1,8 +1,18 @@
-function [inputFeats, outputFeats, normFactors] = MLFeatureRead()
+function [inputFeats, outputFeats, normFactors] = MLFeatureRead(inputFile, outputFile, normFactorFile)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
-inputFeats = readtable('../physionet.org/inputFeatures.csv');
+if (nargin < 3)
+    normFactorFile = 'NormalisationFactors.mat';
+end
+if (nargin < 2)
+    outputFile = '../physionet.org/outputFeatures.csv';
+end
+if (nargin < 1)
+    inputFile = '../physionet.org/inputFeatures.csv';
+end
+
+inputFeats = readtable(inputFile);
 % remove all non-numeric columns - an extra string column often added to
 % end of input csv file
 inputFeatsVarTypes = varfun(@class,inputFeats, 'OutputFormat', 'cell');
@@ -18,7 +28,7 @@ end
 inputFeats = removevars(inputFeats, varsToRemove);
 
 
-outputFeats = readtable('../physionet.org/outputFeatures.csv');
+outputFeats = readtable(outputFile);
 % remove all non-numeric columns - extra string columns often added to
 % end of input csv file
 outputFeatsVarTypes = varfun(@class,outputFeats, 'OutputFormat', 'cell');
@@ -42,7 +52,7 @@ inputFeats(allMissingRows, :) = [];
 outputFeats(allMissingRows, :) = [];
 fprintf("Removed %i rows from data", length(allMissingRows)); 
 
-normFactors = load('NormalisationFactors.mat');
+normFactors = load(normFactorFile);
 normFactors = normFactors.normFactors;
 
 if(height(inputFeats)~= height(outputFeats))
