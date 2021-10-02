@@ -24,4 +24,4 @@ parfor i = 1:length(testImages.Files)
     testInput(:,:,:,i) = readimage(testImages,i);
 end
 
-save('testTrainImageData.mat', 'trainImages', 'testImages', 'trainInput', 'testInput');
+save('testTrainImageData.mat', 'trainImages', 'testImages', 'trainInput', 'testInput', '-v7.3');

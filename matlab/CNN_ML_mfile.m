@@ -20,14 +20,14 @@ testInput = imageData.testInput;
 
 output = table2array(output_tbl);
 
-bp_output = output(:, [203 404 405]);
+% bp_output = output(:, [203 404 405]);
 
-trainSize = ceil(0.8*length(bp_output));
-trainOutput = bp_output(1:trainSize, :);
-testOutput = bp_output(trainSize+1:end, :);
+trainSize = ceil(0.8*length(output));
+trainOutput = output(1:trainSize, :);
+testOutput = output(trainSize+1:end, :);
 
 %%
-numOutputs = size(bp_output,2);
+numOutputs = size(output,2);
 
 % layers = [
 %     imageInputLayer([1024 1024 3])
@@ -56,13 +56,12 @@ layers = [
     convolution2dLayer(3,8,'Padding','same')
     batchNormalizationLayer
     reluLayer
+    averagePooling2dLayer(2,'Stride',2)
+    fullyConnectedLayer(100)
     convolution2dLayer(3,16,'Padding','same')
     batchNormalizationLayer
     reluLayer
     dropoutLayer(0.2)
-    convolution2dLayer(3,32,'Padding','same')
-    batchNormalizationLayer
-    reluLayer
     fullyConnectedLayer(numOutputs)
     regressionLayer];
 
@@ -70,13 +69,13 @@ miniBatchSize  = 8;
 validationFrequency = floor(length(trainImages.Files)/miniBatchSize);
 options = trainingOptions('sgdm', ...
     'MiniBatchSize',miniBatchSize, ...
-    'MaxEpochs',30, ...
+    'MaxEpochs',10, ...
     'InitialLearnRate',1e-6, ...
     'Shuffle','every-epoch', ...
     'ValidationData',{testInput,testOutput}, ...
     'ValidationFrequency',validationFrequency, ...
     'Plots','training-progress', ...
-    'Verbose',false);
+    'Verbose',true);
 
 %     'LearnRateSchedule','piecewise', ...
 %     'LearnRateDropFactor',0.1, ...
@@ -93,18 +92,18 @@ disp("Evaluating performance...");
 
 pred = predict(net,testInput, 'MiniBatchSize', 8);
 
-predMAP = (pred(:,1)* normFactors('ABPAmpScale')) + normFactors('ABPAmpMean');
-trueMAP = (testOutput(:,1)* normFactors('ABPAmpScale')) + normFactors('ABPAmpMean');
+predBP = (pred(:,[203 404 405])* normFactors('ABPAmpScale')) + normFactors('ABPAmpMean');
+trueBP = (testOutput(:,[203 404 405])* normFactors('ABPAmpScale')) + normFactors('ABPAmpMean');
 
-predictionError =  trueMAP - predMAP;
+predictionError =  trueBP - predBP;
 
 % for MAP:
-thresh = 5;
-numCorrect = sum(abs(predictionError(:,1)) < thresh);
+thresh = 10;
+numCorrect = [ sum(abs(predictionError(:,1)) < thresh) sum(abs(predictionError(:,2)) < thresh) sum(abs(predictionError(:,3)) < thresh)];
 numTestSamples = length(testOutput);
 
-disp("For MAP:");
-accuracy = numCorrect/numTestSamples
+disp("For MAP, DBP, SBP:");
+accuracy = numCorrect./numTestSamples
 
 squares = predictionError.^2;
 rmse = sqrt(mean(squares))
