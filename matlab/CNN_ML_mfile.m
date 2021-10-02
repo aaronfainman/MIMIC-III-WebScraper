@@ -22,6 +22,10 @@ output = table2array(output_tbl);
 
 bp_output = output(:, [203 404 405]);
 
+trainSize = ceil(0.8*length(bp_output));
+trainOutput = bp_output(1:trainSize, :);
+testOutput = bp_output(trainSize+1:end, :);
+
 %%
 numOutputs = size(bp_output,2);
 

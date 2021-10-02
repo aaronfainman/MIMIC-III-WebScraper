@@ -9,9 +9,7 @@ allImages = imageDatastore(fullfile(images_dir,'PPG/'),'LabelSource', 'foldernam
 
 [trainImages, testImages] = splitEachLabel(allImages,0.8);
 
-trainSize = ceil(0.8*length(bp_output));
-trainOutput = bp_output(1:trainSize, :);
-testOutput = bp_output(trainSize+1:end, :);
+trainSize = ceil(0.8*length(allImages.Files));
 
 disp("Generating train and test I/O data...");
 
