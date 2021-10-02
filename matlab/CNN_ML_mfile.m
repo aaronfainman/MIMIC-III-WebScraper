@@ -25,14 +25,15 @@ testOutput = bp_output(trainSize+1:end, :);
 
 disp("Generating train and test I/O data...");
 
-trainInput = [];
-for i = 1:length(trainImages.Files)
-    trainInput = cat(4,trainInput, readimage(trainImages,i));
+trainInput = zeros(1024,1024,3,trainSize, 'uint8');
+
+parfor i = 1:length(trainImages.Files)
+    trainInput(:,:,:,i) = readimage(trainImages,i);
 end
 
-testInput = [];
-for i = 1:length(testImages.Files)
-    testInput = cat(4,testInput, readimage(testImages,i));
+testInput = zeros(1024,1024,3,length(allImages.Files) - trainSize, 'uint8');
+parfor i = 1:length(testImages.Files)
+    testInput(:,:,:,i) = readimage(testImages,i);
 end
 
 
