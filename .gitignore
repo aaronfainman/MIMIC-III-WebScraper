@@ -1,6 +1,7 @@
 # Ignore data
 /physionet.org
 .vscode/
+testTrainImageData.mat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

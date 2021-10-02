@@ -5,11 +5,14 @@ addSubPaths();
 segmented_file_dir = "../physionet.org/segmented_data/";
 images_dir = "../physionet.org/cwt_images";
 
-disp("Reading images...");
+disp("Loading data...");
 
-allImages = imageDatastore(fullfile(images_dir,'PPG/'),'LabelSource', 'foldernames');
+imageData = load('testTrainImageData.mat');
 
-[trainImages, testImages] = splitEachLabel(allImages,0.8);
+trainImages = imageData.trainImages;
+testImages = imageData.testImages;
+trainInput = imageData.trainInput;
+testInput = imageData.testInput;
 
 [input_tbl, output_tbl, normFactors] = MLFeatureRead(...
     '../physionet.org/inputFeatures.csv', '../physionet.org/outputFeatures.csv', ...
@@ -18,24 +21,6 @@ allImages = imageDatastore(fullfile(images_dir,'PPG/'),'LabelSource', 'foldernam
 output = table2array(output_tbl);
 
 bp_output = output(:, [203 404 405]);
-
-trainSize = ceil(0.8*length(bp_output));
-trainOutput = bp_output(1:trainSize, :);
-testOutput = bp_output(trainSize+1:end, :);
-
-disp("Generating train and test I/O data...");
-
-trainInput = zeros(1024,1024,3,trainSize, 'uint8');
-
-parfor i = 1:length(trainImages.Files)
-    trainInput(:,:,:,i) = readimage(trainImages,i);
-end
-
-testInput = zeros(1024,1024,3,length(allImages.Files) - trainSize, 'uint8');
-parfor i = 1:length(testImages.Files)
-    testInput(:,:,:,i) = readimage(testImages,i);
-end
-
 
 %%
 numOutputs = size(bp_output,2);
