@@ -4,6 +4,8 @@
 testTrainImageData.mat
 /matlab/TrainedModels
 *.mat
+NormalisationFactors.mat
+netTreeTimes.mat
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
