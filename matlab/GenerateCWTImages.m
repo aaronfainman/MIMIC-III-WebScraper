@@ -22,7 +22,10 @@ allData = cell(1,length(fileList));
 
 minLength = Inf;
 
-for idx = 1:length(fileList)
+startId = 1;
+endId = length(fileList);
+
+parfor idx = startId:endId
     data = importdata(segmented_file_dir + fileList(idx).name); 
     allData{idx} = data;
     minLength = min(minLength, length(data));
@@ -30,20 +33,41 @@ end
 
 fb = cwtfilterbank('SignalLength',minLength,'VoicesPerOctave',12, 'SamplingFrequency', Fs);
 
-for idx = 1:length(fileList)
+cwtSize = size(fb.wt(allData{1}(1:minLength,3)));
+
+ppgCWTs = tall(zeros(cwtSize(1), cwtSize(2), length(startId:endId)));
+abpCWTs = tall(zeros(cwtSize(1), cwtSize(2), length(startId:endId)));
+
+imSize = [224 224]
+
+parfor idx = startId:endId
+   
     data = allData{idx};
     
-    cfsPPG = abs(fb.wt(data(1:minLength,3)));
+    ppg = data(1:minLength,3);
+    abp = data(1:minLength,2);
     
+    cwtPPG = fb.wt(ppg);
+    cfsPPG = abs(cwtPPG);
+    
+    %ppgCWTs(:,:,idx) = cwtPPG;
+
     im = ind2rgb(im2uint8(rescale(cfsPPG)),jet(128));
   
     imFileName = strcat(fileList(idx).name(1:end-4),'_','PPG','.jpg');
-    imwrite(imresize(im,[1024 1024]),fullfile(images_dir,'PPG',imFileName));
+    imwrite(imresize(im, imSize),fullfile(images_dir,'PPG',imFileName));
     
-    cfsABP = abs(fb.wt(data(1:minLength,2)));
+    cwtABP = fb.wt(abp);
+    cfsABP = abs(cwtABP);
     
+    %abpCWTs(:,:,idx) = cwtABP;
+
     im = ind2rgb(im2uint8(rescale(cfsABP)),jet(128));
   
     imFileName = strcat(fileList(idx).name(1:end-4),'_','ABP','.jpg');
-    imwrite(imresize(im,[1024 1024]),fullfile(images_dir,'ABP',imFileName));
+    imwrite(imresize(im, imSize),fullfile(images_dir,'ABP',imFileName));
+
 end
+
+save('cwtData.mat','ppgCWTs','abpCWTs');
+

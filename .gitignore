@@ -2,7 +2,7 @@
 /physionet.org
 .vscode/
 testTrainImageData.mat
-
+/matlab/TrainedModels
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

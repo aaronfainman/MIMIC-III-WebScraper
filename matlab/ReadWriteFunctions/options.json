@@ -4,7 +4,7 @@
     "segmented_file_dir":"../physionet.org/segmented_data/",
     "clear_segmented_dir":false,
     "segmented_abp_dir":"../physionet.org/segmented_abp_beats/",
-    "first_record_process":1850,
+    "first_record_process": 2592,
     "last_record_process":-1,
     "apply_ppg_filter":true,
     "samp_freq":125,
@@ -32,8 +32,8 @@
     "num_freq_components":200,
     "input_feature_file": "../physionet.org/inputFeatures.csv",
     "output_feature_file": "../physionet.org/outputFeatures.csv",
-    "overwrite_feature_files": true,
-    "start_idx_segment2feature": 1,
+    "overwrite_feature_files": false,
+    "start_idx_segment2feature": 13726,
     "end_idx_segment2feature": -1
 }
 
