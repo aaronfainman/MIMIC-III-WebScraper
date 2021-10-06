@@ -39,7 +39,13 @@ if ~exist('LSTMTimeSeriesData.mat')
    abpOutData = cell(length(fileList),1);
 
    outSampledPoints = 1:nT:minLength;
-
+    
+   length10s = 10/Ts;
+   length8s = 8/Ts;
+   
+   minLength = length10s;
+   outSampledPoints = (length8s+1):nT:minLength;
+   
    parfor idx = 1:length(fileList)
        data = allData{idx};
        ppgData{idx} = data(1:minLength,3);
@@ -53,7 +59,8 @@ if ~exist('LSTMTimeSeriesData.mat')
 
    abpMean = mean(mean(reshape(cell2mat(abpData),[minLength length(fileList)])));
    abpRange = mean(range(reshape(cell2mat(abpData),[minLength length(fileList)])));
-
+   
+   
    parfor idx = 1:length(fileList)
        ppgData{idx} = (ppgData{idx}-ppgMean)./ppgRange;
        abpData{idx} = (abpData{idx}-abpMean)./abpRange;
@@ -71,8 +78,7 @@ else
 	ppgMean = dataMatFile.ppgMean;
 	ppgRange = dataMatFile.ppgRange;
 	abpMean = dataMatFile.abpMean;
-        abpRange = dataMatFile.abpRange;
-
+    abpRange = dataMatFile.abpRange;
 end
 
 
@@ -97,18 +103,18 @@ disp('Creating NN...');
 
 layers = [ ...
     sequenceInputLayer(numInPoints, 'Normalization', 'None')
-    lstmLayer(600, 'OutputMode','sequence')
+    lstmLayer(256, 'OutputMode','sequence')
     dropoutLayer(0.2)
-    lstmLayer(600, 'OutputMode','sequence')
+    lstmLayer(256, 'OutputMode','sequence')
     dropoutLayer(0.2)
-    lstmLayer(300,'OutputMode','sequence')
+    lstmLayer(256,'OutputMode','sequence')
     dropoutLayer(0.2)
-    lstmLayer(300,'OutputMode','sequence')
+    lstmLayer(256,'OutputMode','sequence')
     dropoutLayer(0.2)
     fullyConnectedLayer(numOutPoints)
     regressionLayer];
 
-maxEpochs = 10;
+maxEpochs = 5;
 miniBatchSize = 5;
 
 options = trainingOptions('sgdm', ...
@@ -122,7 +128,7 @@ options = trainingOptions('sgdm', ...
 
 disp('Training NN...');
 
- [lstmNN, lstmInfo] = trainNetwork(trainInput,trainOutput,layers,options);
+[lstmNN, lstmInfo] = trainNetwork(trainInput,trainOutput,layers,options);
 
 disp('Evaluating performance...');
 
