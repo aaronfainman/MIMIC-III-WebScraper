@@ -1,4 +1,4 @@
-function abpWave = determineABP(ppgWave, sbp, dbp, map, nnet, filt)
+function abpWave = determineABP(ppgWave, sbp, dbp, map, nnet)
 
 % Once 2nd NNET is done we can have 2 nnet options and not pass in the
 % triple
@@ -10,7 +10,7 @@ imean = mean(abpPred);
 
 abpWave = (abpPred-imean)*((sbp-dbp)/irange) + map;
 
-abpWave = filtfilt(filt, abpWave);
+%abpWave = filtfilt(filt, abpWave);
 
 end
 
