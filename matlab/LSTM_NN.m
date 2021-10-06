@@ -110,8 +110,8 @@ layers = [ ...
     fullyConnectedLayer(numOutPoints)
     regressionLayer];
 
-maxEpochs = 15;
-miniBatchSize = 5;
+maxEpochs = 10;
+miniBatchSize = 30;
 validationFrequency = floor(length(trainInput)/miniBatchSize);
 options = trainingOptions('sgdm', ...
     'MaxEpochs',maxEpochs, ...
