@@ -4,7 +4,6 @@ addSubPaths();
 
 % lstmNN = trainedStuff.lstmNN;
 
-
 if ~exist('LSTMTimeSeriesData.mat')
 	segmented_file_dir = "../physionet.org/segmented_data/";
 
@@ -41,10 +40,11 @@ if ~exist('LSTMTimeSeriesData.mat')
    outSampledPoints = 1:nT:minLength;
     
    length10s = 10/Ts;
+   length9s = 9/Ts;
    length8s = 8/Ts;
-   
-   minLength = length10s;
-   outSampledPoints = (length8s+1):nT:minLength;
+   length6s = 6/Ts;
+   minLength = 10/Ts;
+   outSampledPoints = (9/Ts+1):nT:minLength;
    
    parfor idx = 1:length(fileList)
        data = allData{idx};
@@ -97,38 +97,38 @@ testOutput = abpOutData(testIndices,:);
 numInPoints = size(trainInput{1}, 1);
 numOutPoints = size(trainOutput{1},1);
 
-numHiddenUnits = 600;
-
 disp('Creating NN...');
+
+numLstmUnits = 1024;
 
 layers = [ ...
     sequenceInputLayer(numInPoints, 'Normalization', 'None')
-    lstmLayer(256, 'OutputMode','sequence')
+    bilstmLayer(numLstmUnits, 'OutputMode','sequence')
     dropoutLayer(0.2)
-    lstmLayer(256, 'OutputMode','sequence')
-    dropoutLayer(0.2)
-    lstmLayer(256,'OutputMode','sequence')
-    dropoutLayer(0.2)
-    lstmLayer(256,'OutputMode','sequence')
+    bilstmLayer(numLstmUnits, 'OutputMode','sequence')
     dropoutLayer(0.2)
     fullyConnectedLayer(numOutPoints)
     regressionLayer];
 
-maxEpochs = 5;
+maxEpochs = 15;
 miniBatchSize = 5;
-
+validationFrequency = floor(length(trainInput)/miniBatchSize);
 options = trainingOptions('sgdm', ...
     'MaxEpochs',maxEpochs, ...
     'MiniBatchSize',miniBatchSize, ...
-    'InitialLearnRate',0.1, ...
+    'InitialLearnRate',0.01, ...
     'ExecutionEnvironment', 'gpu', ...
+    'ValidationData',{testInput,testOutput}, ...
+    'ValidationFrequency',validationFrequency, ...
     'GradientThreshold',1, ...
     'Shuffle','never', ...
     'Verbose',1);
 
 disp('Training NN...');
 
-[lstmNN, lstmInfo] = trainNetwork(trainInput,trainOutput,layers,options);
+%%
+
+[lstmNN, lstmInfo] = trainNetwork(trainInput,trainOutput,layers, options);
 
 disp('Evaluating performance...');
 
@@ -142,11 +142,11 @@ end
 
 meanPearsonCorrelation = mean(pearsonCoeffs)
 
-predBP = reshape(cell2mat(predOutput),[numOutPoints length(predOutput)]);
-trueBP = reshape(cell2mat(testOutput),[numOutPoints length(predOutput)]);
+predBP_norm = reshape(cell2mat(predOutput),[numOutPoints length(predOutput)]);
+trueBP_norm = reshape(cell2mat(testOutput),[numOutPoints length(predOutput)]);
 
-predBP = (predBP.*abpRange)+abpMean;
-trueBP = (trueBP.*abpRange)+abpMean;
+predBP = (predBP_norm.*abpRange)+abpMean;
+trueBP = (trueBP_norm.*abpRange)+abpMean;
 
 predMAP = mean(predBP);
 trueMAP = mean(trueBP);
@@ -170,4 +170,4 @@ end
 
 trainTestIndices = {trainingIndices, testIndices};
 
-save('211004_LSTM_1.mat', 'lstmNN', 'trainTestIndices');
+save('211006_LSTM_3.mat', 'lstmNN', 'trainTestIndices');
