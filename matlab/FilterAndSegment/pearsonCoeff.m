@@ -15,7 +15,7 @@ sumy = sum(y);
 sumx2 = sum(x.^2);
 sumy2 = sum(y.^2);
 
-p = (n*sumxy - sumx*sumy)/(sqrt(n*sumx2 - sumx^2)*sqrt(n*sumy2 - sumy^2));
+p = (n*sumxy - sumx.*sumy)./(sqrt(n*sumx2 - sumx.^2).*sqrt(n*sumy2 - sumy.^2));
 
 end
 

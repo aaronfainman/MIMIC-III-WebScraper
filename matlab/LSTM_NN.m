@@ -102,7 +102,7 @@ disp('Creating NN...');
 numLstmUnits = 1024;
 
 layers = [ ...
-    sequenceInputLayer(numInPoints, 'Normalization', 'None')
+    sequenceInputLayer(numInPoints)
     bilstmLayer(numLstmUnits, 'OutputMode','sequence')
     dropoutLayer(0.2)
     bilstmLayer(numLstmUnits, 'OutputMode','sequence')
