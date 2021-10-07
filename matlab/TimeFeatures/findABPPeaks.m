@@ -11,9 +11,11 @@ if(nargin==2 || must_filter)
     abp_wave = filtfilt(filt_design, abp_wave);
 end
 
+sysPts = [];diasPts=[];meanSBP=[]; meanDBP=[];MAP=[];
 sysPts = find(islocalmax(abp_wave, 'MinSeparation', 60)==1);
-
+if(isempty(sysPts)); return; end;
 diasPts = find( islocalmin(abp_wave,'MinSeparation', 60)==1);
+if(isempty(diasPts)); return; end;
 
 meanSBP = mean(abp_wave(sysPts));
 meanDBP = mean(abp_wave(diasPts));
