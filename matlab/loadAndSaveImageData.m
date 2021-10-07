@@ -9,19 +9,19 @@ allImages = imageDatastore(fullfile(images_dir,'PPG/'),'LabelSource', 'foldernam
 
 [trainImages, testImages] = splitEachLabel(allImages,0.8);
 
-trainSize = ceil(0.8*length(allImages.Files));
+trainSize = length(trainImages.Files);
 
 disp("Generating train and test I/O data...");
 
-trainInput = zeros(1024,1024,3,trainSize, 'uint8');
+trainInput = zeros(224,224,3,trainSize, 'uint8');
 
-parfor i = 1:length(trainImages.Files)
+parfor i = 1:trainSize
     trainInput(:,:,:,i) = readimage(trainImages,i);
 end
 
-testInput = zeros(1024,1024,3,length(allImages.Files) - trainSize, 'uint8');
+testInput = zeros(224,224,3,length(testImages.Files), 'uint8');
 parfor i = 1:length(testImages.Files)
     testInput(:,:,:,i) = readimage(testImages,i);
 end
 
-save('testTrainImageData.mat', 'trainImages', 'testImages', 'trainInput', 'testInput');
+save('testTrainImageDataPPG.mat', 'trainImages', 'testImages', 'trainInput', 'testInput', '-v7.3');
