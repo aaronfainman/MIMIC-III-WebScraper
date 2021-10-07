@@ -1,4 +1,4 @@
-function [sysPts, diasPts, meanSBP, meanDBP, MAP] = findBAPPeaks(abp_wave,samp_freq, must_normalize, must_filter)
+function [sysPts, diasPts, meanSBP, meanDBP, MAP] = findABPPeaks(abp_wave,samp_freq, must_normalize, must_filter)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
