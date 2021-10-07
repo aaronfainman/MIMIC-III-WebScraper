@@ -34,7 +34,7 @@ def getRecordList(url):
     return all_record_paths
 
 
-def scrape_mimic_list(record_paths,numprocs):
+def scrape_mimic_list(record_paths,numprocs,  only_download_first):
     global comm
     filesDownloaded = []
     progress = 0
@@ -43,13 +43,13 @@ def scrape_mimic_list(record_paths,numprocs):
         print("  downloading record: ")
     for record_path in record_paths:
         print(record_path)
-        filesDownloaded.extend(scrape_mimic(record_path=record_path))
+        filesDownloaded.extend(scrape_mimic(record_path=record_path,  only_download_first=only_download_first))
         progress +=1
         # printDownloadProgress(progress, len(record_paths), len(filesDownloaded) )
     # printDownloadProgress(len(record_paths),len(record_paths), len(filesDownloaded) )
     return filesDownloaded
 
-def scrape_mimic(record_path):
+def scrape_mimic(record_path, only_download_first=False):
 
     filesDownloaded = []
     #Will look in each record's general layout file for presence of an ABP and PLETH waveform
@@ -97,6 +97,8 @@ def scrape_mimic(record_path):
             # print("DOWNLOAD COMPLETE -- " + filePath)
         except:
             continue
+        if(only_download_first):
+            break
         # print(record_path)
         convertSingleFileToText(record_path+record)
         extractSingleAbpBeatFile(record_path+record)
@@ -236,6 +238,10 @@ if __name__ == '__main__':
         end_download_idx = int(sys.argv[3])
     else:
         end_download_idx = -1
+    if len(sys.argv) > 4:
+        only_download_first = bool(sys.argv[4])
+    else:
+        only_download_first = False
 
     if rank == 0:
         if not os.path.isdir(TEXTDATAFOLDER):
@@ -279,7 +285,7 @@ if __name__ == '__main__':
     
     if download_files_flag!=0:
         print("\nBeginning downloads.") if rank==0 else 0
-        scrape_mimic_list(myRecords, numprocs)
+        scrape_mimic_list(myRecords, numprocs, only_download_first)
         print("\nDownloads complete.") if rank==0 else 0
 
     # comm.Barrier()
