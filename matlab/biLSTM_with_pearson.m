@@ -1,12 +1,19 @@
-disp('Reading data from mat file...');
-dataMatFile = load('observationData.mat');
-ppgData = dataMatFile.allData.ppg;
-abpOutData = dataMatFile.allData.abpWave;
+addSubPaths();
 
-ppgMean = dataMatFile.ppgNorms(1);
-ppgRange = dataMatFile.ppgNorms(2);
-abpMean = dataMatFile.abpNorms(1);
-abpRange = dataMatFile.abpNorms(2);
+disp('Reading data from mat file...');
+dataMatFile = load('timeObservationsWithLastSecond.mat');
+ppgData = dataMatFile.inputFeats;
+abpOutData = dataMatFile.outputFeatsWave;
+
+% [SBP, DBP, MAP]
+abpVals = dataMatFile.outputFeatsBP;
+
+normFactors = load('NormalisationFactors.mat').normFactors;
+
+ppgMean = normFactors('PPGAmpMean');
+ppgRange = normFactors('PPGAmpScale');
+abpMean = normFactors('ABPAmpMean');
+abpRange = normFactors('ABPAmpScale');
 
 
 disp('Separating train and test data...');
@@ -37,12 +44,12 @@ layers = [ ...
     pearsonRegressionLayer('PearsonReg')];
 
 maxEpochs = 15;
-miniBatchSize = 30;
+miniBatchSize = 100;
 validationFrequency = floor(length(trainInput)/miniBatchSize);
 options = trainingOptions('sgdm', ...
     'MaxEpochs',maxEpochs, ...
     'MiniBatchSize',miniBatchSize, ...
-    'InitialLearnRate',0.01, ...
+    'InitialLearnRate',0.001, ...
     'ExecutionEnvironment', 'gpu', ...
     'ValidationData',{testInput,testOutput}, ...
     'ValidationFrequency',validationFrequency, ...
@@ -80,5 +87,9 @@ errorMAP = predMAP - trueMAP;
 rmseMAP = sqrt(mean(errorMAP.^2))
 
 thresh = 10;
-accuracy = sum(abs(errorMAP)< thresh)/length(errorMAP)
+mapAccuracy = sum(abs(errorMAP) < thresh)/length(errorMAP)
+
+ttIndices = {trainingIndices, testIndices};
+
+save('biLSTM_pearson_211008.mat','lstmNN','ttIndices');
 
