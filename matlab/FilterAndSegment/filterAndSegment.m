@@ -16,6 +16,7 @@ function [] = filterAndSegment(opts)
 % 6. (Commented out) write each beat location for every segment to a file
 %       naming convention: each same name as segment with a b at the end
 
+fprintf("Making directories....\n")
 if ~isfolder(opts.orig_file_dir)
     error("Original file directory not found")
 end
@@ -29,6 +30,7 @@ if ~isfolder(opts.segmented_file_dir)
     mkdir(opts.segmented_file_dir)
 else
     if(opts.clear_segmented_dir)
+        fprintf("Removing segments directory....\n")
         rmdir(opts.segmented_file_dir, 's')
         mkdir(opts.segmented_file_dir)
     end
@@ -52,6 +54,8 @@ filt_design = designfilt(opts.filter.type,'FilterOrder',opts.filter.order, ...
 if opts.last_record_process == -1
     opts.last_record_process = length(fileList);
 end
+
+fprintf("Beginning processing... \n");
 
 parfor idx = opts.first_record_process:opts.last_record_process
     % *********** 1. open both data and ABP files ***********  
@@ -132,6 +136,7 @@ parfor idx = opts.first_record_process:opts.last_record_process
       end
 
 end
+fprintf("Processing ended. \n")
 
 
 
