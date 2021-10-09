@@ -9,7 +9,7 @@ bpVals = predict(nnetBP, ppgWave').*normVals(1) + normVals(2);
 
 sbp = bpVals(1);
 dbp = bpVals(2);
-map = bpVals(3);
+map = (sbp+2*dbp)/3; %bpVals(3);
 
 irange = range(abpPred);
 imean = mean(abpPred);

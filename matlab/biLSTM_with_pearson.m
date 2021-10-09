@@ -37,14 +37,14 @@ numLstmUnits = 1024;
 layers = [ ...
     sequenceInputLayer(numInPoints)
     bilstmLayer(numLstmUnits, 'OutputMode','sequence')
-    dropoutLayer(0.2)
+    dropoutLayer(0.5)
     bilstmLayer(numLstmUnits, 'OutputMode','sequence')
-    dropoutLayer(0.2)
+    dropoutLayer(0.5)
     fullyConnectedLayer(numOutPoints)
     pearsonRegressionLayer('PearsonReg')];
 
-maxEpochs = 15;
-miniBatchSize = 100;
+maxEpochs = 30;
+miniBatchSize = 150;
 validationFrequency = floor(length(trainInput)/miniBatchSize);
 options = trainingOptions('sgdm', ...
     'MaxEpochs',maxEpochs, ...
@@ -54,6 +54,7 @@ options = trainingOptions('sgdm', ...
     'ValidationData',{testInput,testOutput}, ...
     'ValidationFrequency',validationFrequency, ...
     'GradientThreshold',1, ...
+    'L2Regularization', 8e-2, ...    
     'Shuffle','never', ...
     'Verbose',1);
 
@@ -91,5 +92,5 @@ mapAccuracy = sum(abs(errorMAP) < thresh)/length(errorMAP)
 
 ttIndices = {trainingIndices, testIndices};
 
-save('biLSTM_pearson_211008.mat','lstmNN','ttIndices');
+save('biLSTM_pearson_211009_3.mat','lstmNN','ttIndices');
 
