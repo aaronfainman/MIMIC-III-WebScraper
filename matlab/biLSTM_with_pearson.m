@@ -8,7 +8,7 @@ abpOutData = dataMatFile.outputFeatsWave;
 % [SBP, DBP, MAP]
 abpVals = dataMatFile.outputFeatsBP;
 
-normFactors = load('NormalisationFactors.mat').normFactors;
+normFactors = dataMatFile.normFactors;
 
 ppgMean = normFactors('PPGAmpMean');
 ppgRange = normFactors('PPGAmpScale');
@@ -17,15 +17,20 @@ abpRange = normFactors('ABPAmpScale');
 
 
 disp('Separating train and test data...');
-partition_variable = cvpartition(height(ppgData), "Holdout",0.25);
+% partition_variable = cvpartition(height(ppgData), "Holdout",0.25);
 
-trainingIndices = training(partition_variable);
+trainingIndices = dataMatFile.trainingIndices;
 trainInput = num2cell(ppgData(trainingIndices,:)',1)';
 trainOutput = num2cell(abpOutData(trainingIndices,:)',1)';
 
-testIndices = test(partition_variable);
+testIndices = dataMatFile.testIndices;
 testInput = num2cell(ppgData(testIndices,:)',1)';
 testOutput = num2cell(abpOutData(testIndices,:)',1)';
+
+validateIndices = dataMatFile.validIndices;
+validateInput = num2cell(ppgData(validateIndices,:)',1)';
+validateOutput = num2cell(abpOutData(validateIndices,:)',1)';
+
 
 numInPoints = size(trainInput{1}, 1);
 numOutPoints = size(trainOutput{1},1);
@@ -37,34 +42,33 @@ numLstmUnits = 1024;
 layers = [ ...
     sequenceInputLayer(numInPoints)
     bilstmLayer(numLstmUnits, 'OutputMode','sequence')
-    dropoutLayer(0.5)
+    dropoutLayer(0.2)
     bilstmLayer(numLstmUnits, 'OutputMode','sequence')
-    dropoutLayer(0.5)
+    dropoutLayer(0.2)
     fullyConnectedLayer(numOutPoints)
-    pearsonRegressionLayer('PearsonReg')];
+    pearsonRegressionLayer('Output')];
 
-maxEpochs = 30;
-miniBatchSize = 150;
+maxEpochs = 15;
+miniBatchSize = 200;
 validationFrequency = floor(length(trainInput)/miniBatchSize);
 options = trainingOptions('sgdm', ...
     'MaxEpochs',maxEpochs, ...
     'MiniBatchSize',miniBatchSize, ...
-    'InitialLearnRate',0.001, ...
+    'InitialLearnRate',0.01, ...
     'ExecutionEnvironment', 'gpu', ...
-    'ValidationData',{testInput,testOutput}, ...
+    'ValidationData',{validateInput,validateOutput}, ...
     'ValidationFrequency',validationFrequency, ...
     'GradientThreshold',1, ...
-    'L2Regularization', 8e-2, ...    
     'Shuffle','never', ...
     'Verbose',1);
 
 disp('Training NN...');
 
-[lstmNN, lstmInfo] = trainNetwork(trainInput,trainOutput,layers, options);
+[netLSTM, netInfo] = trainNetwork(trainInput,trainOutput,layers, options);
 
 disp('Evaluating performance...');
 
-predOutput = predict(lstmNN,testInput, 'MiniBatchSize',miniBatchSize);
+predOutput = predict(netLSTM,testInput, 'MiniBatchSize',miniBatchSize);
 
 pearsonCoeffs = zeros(length(testOutput),1);
 
@@ -90,7 +94,5 @@ rmseMAP = sqrt(mean(errorMAP.^2))
 thresh = 10;
 mapAccuracy = sum(abs(errorMAP) < thresh)/length(errorMAP)
 
-ttIndices = {trainingIndices, testIndices};
-
-save('biLSTM_pearson_211009_3.mat','lstmNN','ttIndices');
+save('biLSTM_pearson_211010.mat','netLSTM','netInfo');
 

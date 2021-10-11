@@ -2,7 +2,7 @@
     "orig_file_dir":"../physionet.org/textdata/",
     "abp_ann_dir":"../physionet.org/abp_ann/",
     "segmented_file_dir":"../physionet.org/segmented_data/",
-    "clear_segmented_dir":true,
+    "clear_segmented_dir":false,
     "segmented_abp_dir":"../physionet.org/segmented_abp_beats/",
     "first_record_process": 1,
     "last_record_process":-1,
