@@ -9,8 +9,15 @@ bpVals = predict(nnetBP, ppgWave').*normVals(1) + normVals(2);
 
 sbp = bpVals(1);
 dbp = bpVals(2);
-map = bpVals(3);
-% map = (sbp+2*dbp)/3;
+
+mapVal = bpVals(3);
+mapApprox = (sbp+2*dbp)/3;
+
+if (abs(mapVal-mapApprox)/mapApprox > 0.9)
+    map = mapVal;
+else
+    map = mapApprox;
+end
 
 irange = range(abpPred);
 imean = mean(abpPred);

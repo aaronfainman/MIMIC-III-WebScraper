@@ -40,7 +40,7 @@ end
 
 if (~exist("nnetWave") || ~exist("nnetBP"))
 disp('Loading neural nets...');
-nnetWave = load('biLSTM_pearson_211010_3runs.mat').netLSTM;
+nnetWave = load('ANN_pearson_211011_333.netANN;
 nnetBP = load('TrainedModels/netRetrainedOnAll3_extradata.mat').net_retrain2;
 end
 
@@ -48,7 +48,7 @@ numObs = length(testInput);
 
 n = 15;
 
-rnd = randperm(numObs, n);
+rnd = load('rnd.mat').rnd;
 
 abpOuts = cell(1, n);
 
