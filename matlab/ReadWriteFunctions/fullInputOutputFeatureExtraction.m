@@ -63,43 +63,43 @@ CT = (CT-normFactors('CTMean'))/(normFactors('CTScale'));
 inputFeatures('CT') = CT;
 
 %*************** FREQ INPUT FEATURE EXTRACTION, SCALING *****************
-
-[pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, ppg_wave, opts.num_freq_components, opts.bandwidth_criterion);
-inputFeatures('PPGPower') = power/(normFactors('PPGPower'));
-inputFeatures('PPGBW') = bandwidth/normFactors('PPGBW');
-if(numel(pkFreqs) < opts.num_freq_components); pkFreqs = zeropad(pkFreqs, opts.num_freq_components-numel(pkFreqs)+1, "post" );end
-if(numel(pkMags) < opts.num_freq_components); pkMags = zeropad(pkMags, opts.num_freq_components-numel(pkMags)+1, "post" );end
-if(numel(pkPhases) < opts.num_freq_components); pkPhases = zeropad(pkPhases, opts.num_freq_components-numel(pkPhases)+1, "post" );end
-%SCALE FREQ COMPONENTS
-% magNormFactorsPPG = normFactors('pkPPGMags');
-for i=1:opts.num_freq_components
-    keyName = "Freq"+num2str(i, "%03.f");
-    inputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScalePPG'); 
-    keyName = "Mag"+num2str(i, "%03.f");
-%     inputFeatures(keyName) = pkMags(i)/magNormFactorsPPG(i);
-    inputFeatures(keyName) = pkMags(i);
-    keyName = "Phase"+num2str(i, "%03.f");
-    inputFeatures(keyName) = pkPhases(i)/pi;
-end
-
-%*************** OUTPUT FETAURE EXTRACTION, SCALING *****************
-outputFeatures = containers.Map(); 
-[pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, abp_wave, opts.num_freq_components, opts.bandwidth_criterion);
-outputFeatures('ABPPower') = power/(normFactors('ABPPower'));
-outputFeatures('ABPBW') = bandwidth/normFactors('ABPBW');
-if(numel(pkFreqs) < opts.num_freq_components); pkFreqs = zeropad(pkFreqs, opts.num_freq_components-numel(pkFreqs)+1, "post" );end
-if(numel(pkMags) < opts.num_freq_components); pkMags = zeropad(pkMags, opts.num_freq_components-numel(pkMags)+1, "post" );end
-if(numel(pkPhases) < opts.num_freq_components); pkPhases = zeropad(pkPhases, opts.num_freq_components-numel(pkPhases)+1, "post" );end
-% magNormFactorsABP = normFactors('pkABPMags');
-%SCALE FREQ COMPONENTS
-for i=1:opts.num_freq_components
-    keyName = "Freq"+num2str(i, "%03.f");
-    outputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScaleABP'); 
-    keyName = "Mag"+num2str(i, "%03.f");
-%     outputFeatures(keyName) = pkMags(i)/magNormFactorsABP(i);
-    outputFeatures(keyName) = pkMags(i);
-    keyName = "Phase"+num2str(i, "%03.f");
-    outputFeatures(keyName) = pkPhases(i)/pi;
+% 
+% [pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, ppg_wave, opts.num_freq_components, opts.bandwidth_criterion);
+% inputFeatures('PPGPower') = power/(normFactors('PPGPower'));
+% inputFeatures('PPGBW') = bandwidth/normFactors('PPGBW');
+% if(numel(pkFreqs) < opts.num_freq_components); pkFreqs = zeropad(pkFreqs, opts.num_freq_components-numel(pkFreqs)+1, "post" );end
+% if(numel(pkMags) < opts.num_freq_components); pkMags = zeropad(pkMags, opts.num_freq_components-numel(pkMags)+1, "post" );end
+% if(numel(pkPhases) < opts.num_freq_components); pkPhases = zeropad(pkPhases, opts.num_freq_components-numel(pkPhases)+1, "post" );end
+% %SCALE FREQ COMPONENTS
+% % magNormFactorsPPG = normFactors('pkPPGMags');
+% for i=1:opts.num_freq_components
+%     keyName = "Freq"+num2str(i, "%03.f");
+%     inputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScalePPG'); 
+%     keyName = "Mag"+num2str(i, "%03.f");
+% %     inputFeatures(keyName) = pkMags(i)/magNormFactorsPPG(i);
+%     inputFeatures(keyName) = pkMags(i);
+%     keyName = "Phase"+num2str(i, "%03.f");
+%     inputFeatures(keyName) = pkPhases(i)/pi;
+% end
+% 
+% %*************** OUTPUT FETAURE EXTRACTION, SCALING *****************
+% outputFeatures = containers.Map(); 
+% [pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, abp_wave, opts.num_freq_components, opts.bandwidth_criterion);
+% outputFeatures('ABPPower') = power/(normFactors('ABPPower'));
+% outputFeatures('ABPBW') = bandwidth/normFactors('ABPBW');
+% if(numel(pkFreqs) < opts.num_freq_components); pkFreqs = zeropad(pkFreqs, opts.num_freq_components-numel(pkFreqs)+1, "post" );end
+% if(numel(pkMags) < opts.num_freq_components); pkMags = zeropad(pkMags, opts.num_freq_components-numel(pkMags)+1, "post" );end
+% if(numel(pkPhases) < opts.num_freq_components); pkPhases = zeropad(pkPhases, opts.num_freq_components-numel(pkPhases)+1, "post" );end
+% % magNormFactorsABP = normFactors('pkABPMags');
+% %SCALE FREQ COMPONENTS
+% for i=1:opts.num_freq_components
+%     keyName = "Freq"+num2str(i, "%03.f");
+%     outputFeatures(keyName) = pkFreqs(i)/normFactors('FreqScaleABP'); 
+%     keyName = "Mag"+num2str(i, "%03.f");
+% %     outputFeatures(keyName) = pkMags(i)/magNormFactorsABP(i);
+%     outputFeatures(keyName) = pkMags(i);
+%     keyName = "Phase"+num2str(i, "%03.f");
+%     outputFeatures(keyName) = pkPhases(i)/pi;
 end
 
 [~, ~, meanSBP, meanDBP, MAP] = findABPPeaks(data(:,2), opts.samp_freq);
