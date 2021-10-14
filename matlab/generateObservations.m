@@ -71,7 +71,6 @@ allData.ppg = [];
 allData.abpWave = [];
 allData.abpDiscrete = [];
 for i = 1:length(dataPerSegment)
-    i
     dataSeg = dataPerSegment{i};
     for j = 1:length(dataSeg)
         allData.ppg = [allData.ppg; (dataSeg{j}{1})'];
