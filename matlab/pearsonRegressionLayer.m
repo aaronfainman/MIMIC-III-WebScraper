@@ -18,31 +18,25 @@ classdef pearsonRegressionLayer < nnet.layer.RegressionLayer
             % loss = forwardLoss(layer, Y, T) returns the MAE loss between
             % the predictions Y and the training targets T.
 
-            % Calculate MAE.
-            meanPearsonCoeff = mean(pearsonCoeff(Y,T), 3);
+            % Calculate Pearson coeff.
+
+	    n = length(Y);
+
+            sumYT = sum(Y.*T);
+
+            sumY = sum(Y);
+            sumT = sum(T);
+
+            sumY2 = sum(Y.^2);
+            sumT2 = sum(T.^2);
+
+            p = (n*sumYT - sumY.*sumT)./(sqrt(n*sumY2 - sumY.^2).*sqrt(n*sumT2 - sumT.^2));
+
+            meanPearsonCoeff = mean(p, 3);
     
             % Take mean over mini-batch
             loss = 1 - mean(meanPearsonCoeff);
         end
         
-        function p = pearsonCoeff(x, y)
-            % Computes the pearson correlation coefficient for x and y, assuming all
-            % (x,y) values are paired. This provides a measure of how similarly
-            % correlated the two signals are.
-            % See Harfiya et al. and the wikipedia page on Pearson's correlation
-            % coefficient for more.
-
-            n = length(x);
-
-            sumxy = sum(x.*y);
-
-            sumx = sum(x);
-            sumy = sum(y);
-
-            sumx2 = sum(x.^2);
-            sumy2 = sum(y.^2);
-
-            p = (n*sumxy - sumx.*sumy)./(sqrt(n*sumx2 - sumx.^2).*sqrt(n*sumy2 - sumy.^2));
-        end
     end
 end
