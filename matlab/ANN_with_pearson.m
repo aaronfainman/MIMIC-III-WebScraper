@@ -66,7 +66,7 @@ else
     netANN = load('ANN_pearson_211011_3.mat').netANN;
 end
 
-maxEpochs = 100;
+maxEpochs = 200;
 miniBatchSize = 200;
 validationFrequency = floor(length(trainInput)/miniBatchSize);
 options = trainingOptions('sgdm', ...
@@ -117,7 +117,7 @@ rmseMAP = sqrt(mean(errorMAP.^2))
 thresh = 10;
 mapAccuracy = sum(abs(errorMAP) < thresh)/length(errorMAP)
 
-save('ANN_pearson_211012_4.mat','netANN','netInfo');
+save('ANN_pearson_211014_1.mat','netANN','netInfo');
 
 disp("Complete")
 
