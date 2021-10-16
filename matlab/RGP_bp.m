@@ -38,7 +38,7 @@ numOutPoints = size(trainOutput,2);
 
 disp("Training model...");
 
-rgpMdl = fitrgp(trainInput, trainOutput, "Verbose", 1);
+rgpMdl = fitrgp(trainInput, trainOutput, "Verbose", 1,'FitMethod','fic', 'PredictMethod','fic');
 
 disp("Evaluating performance...");
 

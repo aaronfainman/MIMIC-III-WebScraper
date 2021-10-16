@@ -23,17 +23,17 @@ disp('Separating train and test data...');
 
 trainingIndices = dataMatFile.trainingIndices;
 trainInput = ppgData(trainingIndices,:);
-trainInput = reshape(trainInput', [1, 1250, length(trainInput)]);
+trainInput = reshape(trainInput', [1, 1250, 1, length(trainInput)]);
 trainOutput = abpVals(trainingIndices,:);
 
 testIndices = dataMatFile.testIndices;
 testInput = ppgData(testIndices,:);
-testInput = reshape(testInput', [1, 1250, length(testInput)]);
+testInput = reshape(testInput', [1, 1250, 1, length(testInput)]);
 testOutput = abpVals(testIndices,:);
 
 validateIndices = dataMatFile.validIndices;
 validateInput = ppgData(validateIndices,:);
-validateInput = reshape(validateInput', [1, 1250, length(validateInput)]);
+validateInput = reshape(validateInput', [1, 1250,1, length(validateInput)]);
 validateOutput = abpVals(validateIndices,:);
 
 numInPoints = size(trainInput, 2);
@@ -44,7 +44,7 @@ disp('Creating neural network...');
 numFilters = 125;
 filterSize = 10;
 dropoutFactor = 0.005;
-numBlocks = 4;
+numBlocks = 1;
 
 
 
@@ -93,10 +93,10 @@ layers = [
 lgraph = addLayers(lgraph,layers);
 lgraph = connectLayers(lgraph,outputName,"fc");
 
-maxEpochs = 60;
-miniBatchSize = 1;
+maxEpochs = 50;
+miniBatchSize = 200;
 validationFrequency = floor(length(trainInput)/miniBatchSize);
-options = trainingOptions('adam', ...
+options = trainingOptions('sgdm', ...
     'MaxEpochs',maxEpochs, ...
     'MiniBatchSize',miniBatchSize, ...
     'InitialLearnRate',0.01, ...
@@ -107,7 +107,7 @@ options = trainingOptions('adam', ...
 
 disp('Training NN...');
 
-[netCNN, netInfo] = trainNetwork(trainInput,trainOutput,layers, options);
+[netCNN, netInfo] = trainNetwork(trainInput,trainOutput,lgraph, options);
 
 disp('Evaluating performance...');
 
@@ -129,6 +129,6 @@ rmseBP = sqrt(mean(errorBP.^2))
 thresh = 10;
 accuracy = sum(abs(errorBP) < thresh)/length(errorBP)
 
-save('CNN_1D_BP_211015.mat','netCNN','netInfo');
+save('CNN_1D_BP_211016.mat','netCNN','netInfo');
 
 disp("Complete");
