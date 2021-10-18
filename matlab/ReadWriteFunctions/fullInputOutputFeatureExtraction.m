@@ -84,6 +84,7 @@ inputFeatures('CT') = CT;
 % 
 % %*************** OUTPUT FETAURE EXTRACTION, SCALING *****************
  outputFeatures = containers.Map(); 
+
 % [pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, abp_wave, opts.num_freq_components, opts.bandwidth_criterion);
 % outputFeatures('ABPPower') = power/(normFactors('ABPPower'));
 % outputFeatures('ABPBW') = bandwidth/normFactors('ABPBW');
@@ -102,7 +103,7 @@ inputFeatures('CT') = CT;
 %     outputFeatures(keyName) = pkPhases(i)/pi;
 %end
 
-[~, ~, meanSBP, meanDBP, MAP] = findABPPeaks(data(:,2), opts.samp_freq);
+[~, ~, meanSBP, meanDBP, MAP] = findABPPeaks(data(:,2), opts.samp_freq,false,false);
 
 outputFeatures('MeanSBP') = (meanSBP-normFactors('ABPAmpMean'))/normFactors('ABPAmpScale') ;
 outputFeatures('MeanDBP') = (meanDBP-normFactors('ABPAmpMean'))/normFactors('ABPAmpScale') ;
