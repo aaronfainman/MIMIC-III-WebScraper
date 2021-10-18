@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = generatePPGFeatureObs(dataFileName)
+function generatePPGFeatureObs(dataFileName)
 
 addSubPaths();
 
@@ -24,14 +24,14 @@ validIndices = dataMatFile.validIndices;
 startId = 876;
 endId = 1250;
 
-Ts = 125;
+Fs = 125;
 
-numFeats = length(getppgfeatures(ppgData(1, startId:endId), Ts));
+numFeats = length(getppgfeatures(ppgData(1, startId:endId), Fs));
 
 ppgFeats = zeros(height(ppgData), numFeats);
 
 parfor k = 1:height(ppgData)
-    feats_k = getppgfeatures(ppgData(k, startId:endId), Ts);
+    feats_k = getppgfeatures(ppgData(k, startId:endId), Fs);
     if (isempty(feats_k))
         ppgFeats(k,:) = zeros(1, numFeats);
     else
@@ -47,15 +47,15 @@ ppgFeats(invalid, :) = [];
 abpVals(invalid, :) = [];
 
 ids = zeroMat;
-ids(trainingIndices) = logical(1);
+ids(trainingIndices) = true;
 trainingIndices = ids;
 
 ids = zeroMat;
-ids(testIndices) = logical(1);
+ids(testIndices) = true;
 testIndices = ids;
 
 ids = zeroMat;
-ids(validIndices) = logical(1);
+ids(validIndices) = true;
 validIndices = ids;
 
 testIndices(invalid) = [];
@@ -73,6 +73,6 @@ normFactors.ppgMean = ppgMean;
 normFactors.ppgRange = ppgRange;
 
 
-save('featureObservations.mat', 'ppgFeats', 'abpVals', 'normFactors', 'testIndices', 'trainingIndices', 'validIndices');
+save('widthFeatureObservations.mat', 'ppgFeats', 'abpVals', 'normFactors', 'testIndices', 'trainingIndices', 'validIndices');
 
 end

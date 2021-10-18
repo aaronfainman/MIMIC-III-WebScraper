@@ -1,6 +1,8 @@
-function [features] = getppgfeatures(ppg, Ts)
+function [features] = getppgfeatures(ppg, Fs)
 
-[sbpPks, dbpPks, feetLocs] = findPPGPeaks(ppg, Ts);
+Ts = 1/Fs;
+
+[sbpPks, ~, feetLocs] = findPPGPeaks(ppg, Ts);
 
 if (isempty(sbpPks)|| isempty(feetLocs))
     features = [];
