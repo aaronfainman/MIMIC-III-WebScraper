@@ -2,7 +2,7 @@ clc;
 clearvars
 %% Create and initialise serial connection with Arduino
 
-COM = "COM8";
+COM = "COM10";
 
 if (~exist('successFlag','var'))
     [arduino, successFlag] = initConnection(COM);

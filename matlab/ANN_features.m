@@ -1,39 +1,35 @@
 addSubPaths();
 
 disp('Reading data from mat file...');
-dataMatFile = load('timeObservationsWithLastSecond.mat');
-ppgData = dataMatFile.inputFeats;
-abpOutData = dataMatFile.outputFeatsWave;
-
+dataMatFile = load('featureObservations.mat');
+ppgFeats = dataMatFile.ppgFeats;
 % [SBP, DBP, MAP]
-abpVals = dataMatFile.outputFeatsBP;
+abpVals = dataMatFile.abpVals;
 
 normFactors = dataMatFile.normFactors;
 
-ppgMean = normFactors('PPGAmpMean');
-ppgRange = normFactors('PPGAmpScale');
-abpMean = normFactors('ABPAmpMean');
-abpRange = normFactors('ABPAmpScale');
-
+ppgMean = normFactors.ppgMean;
+ppgRange = normFactors.ppgRange;
+abpMean = normFactors.abpMean;
+abpRange = normFactors.abpMean;
 
 disp('Separating train and test data...');
 % partition_variable = cvpartition(height(ppgData), "Holdout",0.25);
 
 trainingIndices = dataMatFile.trainingIndices;
-trainInput = num2cell(ppgData(trainingIndices,:)',1)';
-trainOutput = num2cell(abpOutData(trainingIndices,:)',1)';
+trainInput = ppgFeats(trainingIndices, :);
+trainOutput = abpVals(trainingIndices, :);
 
 testIndices = dataMatFile.testIndices;
-testInput = num2cell(ppgData(testIndices,:)',1)';
-testOutput = num2cell(abpOutData(testIndices,:)',1)';
+testInput = ppgFeats(testIndices, :);
+testOutput = abpVals(testIndices, :);
 
 validateIndices = dataMatFile.validIndices;
-validateInput = num2cell(ppgData(validateIndices,:)',1)';
-validateOutput = num2cell(abpOutData(validateIndices,:)',1)';
+validateInput = ppgFeats(validateIndices, :);
+validateOutput = abpVals(validateIndices, :);
 
-
-numInPoints = size(trainInput{1}, 1);
-numOutPoints = size(trainOutput{1},1);
+numInPoints = size(trainInput, 2);
+numOutPoints = size(trainOutput,2);
 
 useNetwork = 0;
 
@@ -41,38 +37,39 @@ if (~useNetwork)
 
 disp('Creating neural network...');
 
-numUnits = 1024;
+numUnits = 128;
 
 layers = [ ...
-    sequenceInputLayer(numInPoints)
+    featureInputLayer(numInPoints)
     fullyConnectedLayer(numUnits)
     batchNormalizationLayer
     reluLayer
-    dropoutLayer(0.2)
+    dropoutLayer(0.01);
     fullyConnectedLayer(numUnits)
     batchNormalizationLayer
     reluLayer
-    dropoutLayer(0.2)
+    dropoutLayer(0.01);
     fullyConnectedLayer(numUnits)
     batchNormalizationLayer
     reluLayer
-    dropoutLayer(0.2)
+    dropoutLayer(0.01);
     fullyConnectedLayer(numOutPoints)
-    pearsonRegressionLayer('Output')];
+    reluLayer
+    regressionLayer];
 
 else
     disp("Loading network...");
 
-    netANN = load('ANN_pearson_211011_3.mat').netANN;
+    netANN = load('ANN_features_211016_1.mat').netANN;
 end
 
-maxEpochs = 200;
-miniBatchSize = 200;
+maxEpochs = 50;
+miniBatchSize = 150;
 validationFrequency = floor(length(trainInput)/miniBatchSize);
-options = trainingOptions('sgdm', ...
+options = trainingOptions('adam', ...
     'MaxEpochs',maxEpochs, ...
     'MiniBatchSize',miniBatchSize, ...
-    'InitialLearnRate',0.01, ...
+    'InitialLearnRate',0.0001, ...
     'ExecutionEnvironment', 'gpu', ...
     'ValidationData',{validateInput,validateOutput}, ...
     'ValidationFrequency',validationFrequency, ...
@@ -101,25 +98,20 @@ end
 
 meanPearsonCorrelation = mean(pearsonCoeffs)
 
-predBP_norm = reshape(cell2mat(predOutput),[numOutPoints length(predOutput)]);
-trueBP_norm = reshape(cell2mat(testOutput),[numOutPoints length(predOutput)]);
+predBP = (predOutput.*abpRange)+abpMean;
+trueBP = (testOutput.*abpRange)+abpMean;
 
-predBP = (predBP_norm.*abpRange)+abpMean;
-trueBP = (trueBP_norm.*abpRange)+abpMean;
+errorBP = predBP - trueBP;
 
-predMAP = mean(predBP);
-trueMAP = mean(trueBP);
-
-errorMAP = predMAP - trueMAP;
-
-rmseMAP = sqrt(mean(errorMAP.^2))
+rmseBP = sqrt(mean(errorBP.^2))
 
 thresh = 10;
-mapAccuracy = sum(abs(errorMAP) < thresh)/length(errorMAP)
+mapAccuracy = sum(abs(errorBP) < thresh)/length(errorBP)
 
-save('ANN_pearson_211014_1.mat','netANN','netInfo');
+save('ANN_features_211017.mat','netANN','netInfo');
 
 disp("Complete")
+
 
 
 

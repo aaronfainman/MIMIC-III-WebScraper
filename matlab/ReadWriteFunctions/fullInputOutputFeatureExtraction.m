@@ -83,7 +83,8 @@ inputFeatures('CT') = CT;
 % end
 % 
 % %*************** OUTPUT FETAURE EXTRACTION, SCALING *****************
-outputFeatures = containers.Map(); 
+ outputFeatures = containers.Map(); 
+
 % [pkIndices, pkFreqs, pkMags, pkPhases,power, bandwidth] = extractNFrequencyComponents(time, abp_wave, opts.num_freq_components, opts.bandwidth_criterion);
 % outputFeatures('ABPPower') = power/(normFactors('ABPPower'));
 % outputFeatures('ABPBW') = bandwidth/normFactors('ABPBW');
