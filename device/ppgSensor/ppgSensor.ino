@@ -10,7 +10,7 @@ double t0 = 0;
 
 void setup() {
   // put your setup code here, to run once:
-  int baudRate = 19200;
+  int baudRate = 115200;
   Serial.begin(baudRate);
   while(!Serial); //We must wait for Serial to come online
   delay(1000);
@@ -22,16 +22,17 @@ void setup() {
     while (1);
   }
 
-  byte ledBrightness = 128; //Options: 0=Off to 255=50mA
-  byte sampleAverage = 1; //Options: 1, 2, 4, 8, 16, 32
+  byte ledBrightness = 255; //Options: 0=Off to 255=50mA
+  byte sampleAverage = 8; //Options: 1, 2, 4, 8, 16, 32
   byte ledMode = 2; //Options: 1 = Red only, 2 = Red + IR, 3 = Red + IR + Green
-  int sampleRate = 50; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
+  int sampleRate = 1000; //Options: 50, 100, 200, 400, 800, 1000, 1600, 3200
   int pulseWidth = 69; //Options: 69, 118, 215, 411
   int adcRange = 16384; //Options: 2048, 4096, 8192, 16384
 
   particleSensor.setup(ledBrightness, sampleAverage, ledMode, sampleRate, pulseWidth, adcRange);
   // Send initial handshake
   Serial.println("Initialisation successful.");
+  particleSensor.shutDown();
 
   while (!found)
   {
@@ -40,26 +41,39 @@ void setup() {
       instr = Serial.read();
       found = true;
       t0 = millis();
+      particleSensor.wakeUp();
     }
   }
 }
 
 void loop() {
-  particleSensor.check(); 
-  // put your main code here, to run repeatedly:
-  if ((instr == 1) && (particleSensor.available()))
+  if (Serial.available() > 0)
   {
-      // read stored IR
-      Serial.print(millis() - t0, 6);
-      Serial.print(" ");
+    instr = Serial.read();
+  }  
+  // put your main code here, to run repeatedly:
+  if ((instr == 1))
+  {
+    if (!particleSensor.available())
+    {
+      particleSensor.wakeUp();
+    }
+      particleSensor.check(); 
       
+//    Serial.print(millis() - t0, 6);
+//    Serial.print(" ");
+
+      // read stored red
       Serial.print(particleSensor.getFIFORed());
       Serial.print(" ");
       
-      // read stored red
+      // read stored IR
       Serial.println(particleSensor.getFIFOIR());
       // read next set of samples
-      
+            
       particleSensor.nextSample();
+  } else if ((instr == 2))
+  {
+    particleSensor.shutDown();
   }
 }
