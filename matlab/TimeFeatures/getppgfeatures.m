@@ -2,9 +2,13 @@ function [features] = getppgfeatures(ppg, Ts)
 
 [sbpPks, dbpPks, feetLocs] = findPPGPeaks(ppg, Ts);
 
+if (isempty(sbpPks)|| isempty(feetLocs))
+    features = [];
+    return
+end
+
 if (sbpPks(1) < feetLocs(1))
     sbpPks(1) = [];
-    dbpPks(1) = [];
 end
 
 if (length(feetLocs) > length(sbpPks)+1)
@@ -14,8 +18,15 @@ end
 if (length(sbpPks) == length(feetLocs))
     sbpPks(end) = [];
 end
-if (length(dbpPks) == length(feetLocs))
-    dbpPks(end) = [];
+
+if (isempty(sbpPks)|| isempty(feetLocs))
+    features = [];
+    return
+end
+
+if (length(sbpPks)~=(length(feetLocs)-1))
+    features = [];
+    return
 end
 
 cardiac_period = mean(diff(feetLocs))*Ts;
@@ -23,7 +34,7 @@ cardiac_period = mean(diff(feetLocs))*Ts;
 sys_uptime = sbpPks - feetLocs(1:end-1);
 sys_uptime = mean(sys_uptime)*Ts;
 
-dias_time = feetLocs(2:end) - dbpPks;
+dias_time = feetLocs(2:end) - sbpPks;
 dias_time = mean(dias_time)*Ts;
 
 numCycles = length(sbpPks);
@@ -40,20 +51,24 @@ width_ratios = zeros(numCycles,length(pVals));
 
 for i=1:numCycles
     ppg_i = ppg(feetLocs(i):feetLocs(i+1)-1);
-    
-    h = ppg(sbpPks(i))- ppg(feetLocs(i));
-
-    ppg_i = ppg_i - ppg_i(1);
 
     sys_half = ppg_i(1:(sbpPks(i)-feetLocs(i)));
+
+    sys_half = sys_half - min(sys_half);
+
     dias_half = ppg_i(sbpPks(i)-feetLocs(i)+1:end);
 
-    for p = 1:length(pVals)
-        idx = find(abs(sys_half-pVals(p)*h) < 0.005);
-        sw = t(feetLocs(i)+sbpPks(i)) - t(feetLocs(i)+idx(1));
+    dias_half = dias_half - min(dias_half);
 
-        idx = find(abs(dias_half-pVals(p)*h) < 0.005);
-        dw = t(feetLocs(i)+idx(1)) - t(feetLocs(i)+sbpPks(i));
+    sys_h = range(sys_half);
+    dias_h = range(dias_half);
+
+    for p = 1:length(pVals)
+        [~,sid] = min(abs(sys_half-pVals(p)*sys_h));
+        sw = t(sbpPks(i)) - t(feetLocs(i)+sid);
+
+        [~,did] = min(abs(dias_half-pVals(p)*dias_h));
+	dw = t(feetLocs(i)+did) - t(sbpPks(i));
 
         sd_width_vals(i, p*2-1) = sw;
         sd_width_vals(i, p*2) = dw;
@@ -64,9 +79,9 @@ for i=1:numCycles
     end
 end
 
-sd_width_vals = mean(sd_width_vals);
-width_vals = mean(width_vals);
-width_ratios = mean(width_ratios);
+sd_width_vals = mean(sd_width_vals,1);
+width_vals = mean(width_vals,1);
+width_ratios = mean(width_ratios,1);
 
 features = [cardiac_period, sys_uptime, dias_time, ...
     sd_width_vals, width_vals, width_ratios];
