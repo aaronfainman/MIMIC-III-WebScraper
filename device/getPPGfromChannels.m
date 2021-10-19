@@ -19,7 +19,7 @@ R_ac = R - lowerR;
 [~, lowerIR] = envelope(IR, 400, 'peak');
 IR_ac = IR - lowerIR;
 
-ratio_of_ratios = mean(R_ac)/mean(lowerR)*mean(lowerIR)/mean(IR_ac)
+ratio_of_ratios = mean(R_ac)/mean(lowerR)*mean(lowerIR)/mean(IR_ac);
 SpO2 = 104-17./ratio_of_ratios;
 ppg_signal = R_ac+IR_ac.*ratio_of_ratios;
 ppg_signal = ppg_signal(end:-1:1);
