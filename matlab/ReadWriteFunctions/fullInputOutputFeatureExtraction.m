@@ -22,6 +22,14 @@ abp_wave = data(:,2);
 ppg_wave = data(:,3);
 
 %*************** TIME INPUT FEATURE EXTRACTION, SCALING *****************
+time_width_features = getppgfeatures(ppg_wave, opts.samp_freq);
+if(isempty(time_width_features))
+    return;
+end
+
+for i=1:length(time_width_features)
+    inputFeatures("time"+num2str(i, '%02i')) = time_width_features(i);
+end
 
 [sys,dias,feet] = findPPGPeaks(ppg_wave, opts.samp_freq);
 sortedFeatures = sortPPGPeaks(sys, dias, feet);
@@ -61,6 +69,7 @@ inputFeatures('deltaT') = deltaT;
 CT = mean((sortedFeatures(:,2)-sortedFeatures(:,1))./opts.samp_freq);
 CT = (CT-normFactors('CTMean'))/(normFactors('CTScale'));
 inputFeatures('CT') = CT;
+
 
 %*************** FREQ INPUT FEATURE EXTRACTION, SCALING *****************
 % 
