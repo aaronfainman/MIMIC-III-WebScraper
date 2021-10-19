@@ -26,7 +26,7 @@ heart_rate = heartRateFromPPG(sortedFeatures(:,1), sortedFeatures(:,4), samp_fre
 heart_rate = (heart_rate-normFactors('HRMean'))/(normFactors('HRScale'));
 inputFeaturesKeyVal('HR') = heart_rate;
 
-time = 1:length(ppg_wave).*1/samp_freq;
+time = (0:length(ppg_wave)-1).*1/samp_freq;
 resp_rate =  getRespiratoryRateFreq(time, ppg_wave);
 resp_rate = (resp_rate-normFactors('RRMean'))/(normFactors('RRScale'));
 inputFeaturesKeyVal('RespRate') = resp_rate;
@@ -48,10 +48,22 @@ CT = (CT-normFactors('CTMean'))/(normFactors('CTScale'));
 inputFeaturesKeyVal('CT') = CT;
 
 inputFeatures = zeros(1, inputFeaturesKeyVal.Count );
-allKeys = inputFeaturesKeyVal.keys;
-for i=1:inputFeaturesKeyVal.Count
-    inputFeatures(i) = inputFeaturesKeyVal( allKeys{i} );
-end
-
+% allKeys = inputFeaturesKeyVal.keys;
+% for i=1:inputFeaturesKeyVal.Count
+%     fprintf("%s, %f \n", allKeys{i}, inputFeaturesKeyVal( allKeys{i} ) )
+%     inputFeatures(i) = inputFeaturesKeyVal( allKeys{i} );
+% end
+% 
+%  AI         CT       DiasPeakAmp      HR         IPA          PA       RespRate    SysPeakAmp     deltaT     feetAmp
+inputFeatures(1) = inputFeaturesKeyVal('AI');
+inputFeatures(2) = inputFeaturesKeyVal('CT');
+inputFeatures(3) = inputFeaturesKeyVal('DiasPeakAmp');
+inputFeatures(4) = inputFeaturesKeyVal('HR');
+inputFeatures(5) = inputFeaturesKeyVal('IPA');
+inputFeatures(6) = inputFeaturesKeyVal('PA');
+inputFeatures(7) = inputFeaturesKeyVal('RespRate');
+inputFeatures(8) = inputFeaturesKeyVal('SysPeakAmp');
+inputFeatures(9) = inputFeaturesKeyVal('deltaT');
+inputFeatures(10) = inputFeaturesKeyVal('feetAmp');
 end
 
