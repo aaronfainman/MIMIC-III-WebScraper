@@ -1,10 +1,12 @@
 addSubPaths();
 
 disp('Reading data from mat file...');
-dataMatFile = load('featureObservations.mat');
+dataMatFile = load('widthFeatureObservations.mat');
 ppgFeats = dataMatFile.ppgFeats;
 % [SBP, DBP, MAP]
 abpVals = dataMatFile.abpVals;
+
+ppgFeats = ppgFeats(:,1:end-1);
 
 normFactors = dataMatFile.normFactors;
 
@@ -35,7 +37,7 @@ numOutPoints = size(trainOutput,2);
 
 disp('Fitting model...');
 
-fitr_sbp = fitrnet(trainInput, trainOutput(:,1), 'LayerSizes', [1024, 1024], 'Standardize', true,  'Verbose',1,'VerboseFrequency',5, 'IterationLimit', 100, 'Lambda', 0, 'ValidationData', {validateInput(:,:), validateOutput(:,1)}, 'ValidationPatience', inf)
+fitr_sbp = fitrnet(trainInput, trainOutput(:,1), 'LayerSizes', [1024,1024,1024], 'Standardize', true,  'Verbose',1,'VerboseFrequency',5, 'IterationLimit', 8000, 'Lambda', 0, 'ValidationData', {validateInput(:,:), validateOutput(:,1)}, 'ValidationPatience', inf);
 
 disp('Evaluating performance...');
 
@@ -51,7 +53,7 @@ rmseBP = sqrt(mean(errorBP.^2))
 thresh = 10;
 mapAccuracy = sum(abs(errorBP) < thresh)/length(errorBP)
 
-save('Fitr_SBP_211017.mat','fitr_sbp');
+save('Fitr_SBP_211018_3.mat','fitr_sbp');
 
 disp("Complete")
 
