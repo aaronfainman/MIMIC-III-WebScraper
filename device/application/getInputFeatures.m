@@ -5,7 +5,7 @@ function [inputFeatures] = getInputFeatures(ppg_wave, samp_freq)
 inputFeaturesKeyVal = containers.Map(); %using a key-value pair to store features
 
 
-time_width_features = getppgfeatures(ppg_wave, opts.samp_freq);
+time_width_features = getppgfeatures(ppg_wave, samp_freq);
 if(isempty(time_width_features))
     return;
 end
