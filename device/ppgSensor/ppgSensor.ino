@@ -46,19 +46,12 @@ void setup() {
   }
 }
 
-void loop() {
-  if (Serial.available() > 0)
-  {
-    instr = Serial.read();
-  }  
+void loop() {  
+  particleSensor.check(); 
   // put your main code here, to run repeatedly:
-  if ((instr == 1))
+  if ((instr == 1) && particleSensor.available())
   {
-    if (!particleSensor.available())
-    {
-      particleSensor.wakeUp();
-    }
-      particleSensor.check(); 
+
       
 //    Serial.print(millis() - t0, 6);
 //    Serial.print(" ");
@@ -72,8 +65,8 @@ void loop() {
       // read next set of samples
             
       particleSensor.nextSample();
-  } else if ((instr == 2))
-  {
-    particleSensor.shutDown();
-  }
+  } // else if ((instr == 2))
+  // {
+  //  particleSensor.shutDown();
+  // }
 }
