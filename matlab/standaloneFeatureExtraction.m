@@ -1,4 +1,4 @@
-function [inputWave, outputWaves] = standaloneFeatureExtraction()
+function [inputWave, outputWave] = standaloneFeatureExtraction()
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -37,7 +37,7 @@ fprintf("Current file:        ");
 %%%% -----
 normFactors = load('NormalisationFactors.mat').normFactors;
 inputWave = zeros(end_idx,1250);
-outputWaves = zeros(end_idx,25);
+outputWave = zeros(end_idx,25);
 %%%% -----
 
 
