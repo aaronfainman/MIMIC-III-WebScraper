@@ -5,12 +5,12 @@ function [inputFeatures] = getInputFeatures(ppg_wave, samp_freq)
 inputFeaturesKeyVal = containers.Map(); %using a key-value pair to store features
 
 
-time_width_features = getppgfeatures(ppg_wave, opts.samp_freq);
+time_width_features = getppgfeatures(ppg_wave, samp_freq);
 if(isempty(time_width_features))
     return;
 end
 for i=1:length(time_width_features)
-    if(isinf(time_width_features(i))); time_width_features(i) = 0; end;
+    if(isinf(time_width_features(i))); time_width_features(i) = 0; end
     inputFeaturesKeyVal("time"+num2str(i, '%02i')) = time_width_features(i);
 end
 
@@ -60,7 +60,7 @@ inputFeaturesKeyVal('CT') = CT;
 inputFeatures = zeros(1, inputFeaturesKeyVal.Count );
 allKeys = inputFeaturesKeyVal.keys;
 for i=1:inputFeaturesKeyVal.Count
-  %  fprintf("%s, %f \n", allKeys{i}, inputFeaturesKeyVal( allKeys{i} ) )
+    fprintf("%s, %f \n", allKeys{i}, inputFeaturesKeyVal( allKeys{i} ) )
     inputFeatures(i) = inputFeaturesKeyVal( allKeys{i} );
 end
 
