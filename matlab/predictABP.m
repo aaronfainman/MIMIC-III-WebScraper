@@ -1,10 +1,8 @@
-function [abpWave, sbp, dbp, map] = predictABP(ppgWave, nnets)
+function [abpWave, sbp, dbp, map] = predictABP(ppgWave, ppgFeats, nnets)
 
 abpPred = predict(nnets.wave,ppgWave);
 
-% Comment out
-ppgDenorm = ppgWave*nnets.ppgScale + nnets.ppgMean;
-ppgFeats = getInputFeatures(ppgDenorm, 125);
+%ppgFeats = getInputFeatures(ppgWave, 125);
 
 
 
@@ -16,7 +14,7 @@ map = predict(nnets.map, ppgFeats).*nnets.abpScale + nnets.abpMean;
 
 mapApprox = (sbp+2*dbp)/3;
 
-if (abs(map-mapApprox)/mapApprox < 0.1)
+if (abs(map-mapApprox)/mapApprox < 0.05)
     map = map;
 else
     map = mapApprox;
