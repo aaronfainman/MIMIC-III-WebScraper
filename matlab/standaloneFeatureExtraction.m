@@ -1,4 +1,4 @@
-function [] = standaloneFeatureExtraction()
+function [inputWave, outputWave] = standaloneFeatureExtraction()
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -33,6 +33,14 @@ if(end_idx==-1); end_idx = numFiles; end;
 fprintf("\n Extracting features from %i files (%i - %i) of available %i files.\n", end_idx-start_idx+1, start_idx, end_idx, numFiles);
 fprintf("Current file:        ");
 
+
+%%%% -----
+normFactors = load('NormalisationFactors.mat').normFactors;
+inputWave = zeros(end_idx,1250);
+outputWave = zeros(end_idx,25);
+%%%% -----
+
+
 %if we want to parallelise this we need to be careful about parallel file
 %writing
 for (idx = start_idx:end_idx)
@@ -45,6 +53,16 @@ for (idx = start_idx:end_idx)
 
     writeMapValuesToFile(outputFeatFile, outputFeats, " %3.7f, ");
     fprintf(outputFeatFile,"\n");
+
+
+    dataFile = fopen(opts.segmented_file_dir + fileList(idx).name);
+
+    data = cell2mat(textscan( dataFile, ...
+     '%f %f %f', 'TreatAsEmpty', '-', 'EmptyValue', 0));
+
+    inputWave(idx, :) = (interp1(data(:,1), data(:,2), linspace(0,10,1250))-normFactors('PPGAmpMean'))./normFactors('PPGAmpScale');
+    outputWave(idx, :) = (interp1(data(:,1), data(:,3), linspace(9,10,25))-normFactors('ABPAmpMean'))./normFactors('ABPAmpScale');
+
 end
 fprintf("\n Completed successfully. \n")
 
