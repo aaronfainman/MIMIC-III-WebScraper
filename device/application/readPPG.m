@@ -1,9 +1,14 @@
-function data = readPPG(s)
+function data = readPPG(s, numData)
 
-comData = readline(s);
+if nargin < 2
+    numData = 1;
+end
 
-data = textscan(comData, '%f %f');
+data = zeros(numData,2);
+for i = 1:numData
+    comData = readline(s);
+    data(i,:) = cell2mat(textscan(comData, '%f %f'));
+end
 
-data = cell2mat(data);
 end
 

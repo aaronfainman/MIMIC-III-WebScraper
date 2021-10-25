@@ -1,21 +1,34 @@
-function [ppg_sig] = processRawPPG(ppg_sig)
+function [ppg_sig] = processRawPPG(ppg_sig, ppgSF, ppgMF, ppgScale, ppgMean)
 %PROCESSRAWPPG Summary of this function goes here
 %   Detailed explanation goes here
 
 
-filt_design = designfilt('highpassiir','FilterOrder',2, ...
-    'HalfPowerFrequency',0.1/125,'DesignMethod','butter');
+%filt_design = designfilt('bandpassiir','FilterOrder',2, ...
+%    'HalfPowerFrequency1',[0.1/125 5/125],'DesignMethod','butter');
+
+filt_design = designfilt('bandpassiir','FilterOrder',4, ...
+         'HalfPowerFrequency1',0.3,'HalfPowerFrequency2',5, ...
+         'SampleRate',125);
+
 
 ppg_sig = filter(filt_design, ppg_sig);
 ppg_sig = min(3, max(-2, ppg_sig));
-ppg_sig = hampel(ppg_sig, 125);
-ppg_sig = -1.*ppg_sig+3;
+%ppg_sig = hampel(ppg_sig, 125);
+
+ppg_sig = movmean(ppg_sig, 5);
+%ppg_sig = -1.*ppg_sig+3;
+
+if nargin > 1
+    %ppg_sig = (ppg_sig - mean(ppg_sig))*(ppgScale/ppgSF) + (ppgMean/ppgMF)*mean(ppg_sig);
+    ppg_sig = (ppg_sig - mean(ppg_sig))*(ppgScale/range(ppg_sig)) + ppgMean;
+    
+end
 
 
 ppg_flats = findFlatRegionsFast(ppg_sig, 0.004,400, 0.4); 
 
 [ppg_regions, num_reg] = removeInvalidFromPPG(ppg_flats, 375, ppg_sig);
-if(isempty(ppg_regions{1}))
+if(isempty(ppg_regions))
     ppg_sig = [];
     return;
 end
