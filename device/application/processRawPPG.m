@@ -7,7 +7,7 @@ filt_design = designfilt('highpassiir','FilterOrder',2, ...
     'HalfPowerFrequency',0.1/125,'DesignMethod','butter');
 
 ppg_sig = filter(filt_design, ppg_sig);
-ppg_sig = min(3, max(-2, ppg_sig));
+ppg_sig = min(4, max(-2, ppg_sig));
 ppg_sig = hampel(ppg_sig, 125);
 ppg_sig = -1.*ppg_sig+3;
 

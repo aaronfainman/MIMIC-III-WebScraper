@@ -11,6 +11,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+#Video recordings
+*.mp4
+*.mov
+
 # C extensions
 *.so
 
