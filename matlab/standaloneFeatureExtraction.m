@@ -73,6 +73,9 @@ parfor (idx = start_idx:end_idx)
     inputWave(idx, :) = (interp1(data(:,1), data(:,2), linspace(0,10,1250))-normFactors('PPGAmpMean'))./normFactors('PPGAmpScale');
     outputWave(idx, :) = (interp1(data(:,1), data(:,3), linspace(9,10,25))-normFactors('ABPAmpMean'))./normFactors('ABPAmpScale');
 
+    fclose(outputFeatFile);
+     fclose(inputFeatFile);
+
 end
 fprintf("\n Completed successfully. \n")
 
