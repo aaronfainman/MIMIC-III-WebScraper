@@ -61,7 +61,6 @@ def scrape_mimic(record_path, only_download_first=False):
 
     all_records_in_folder = str(BeautifulSoup(RecordsInFolderRequest.text, 'html.parser')).splitlines()
 
-    numDownloads = 0;
     for record in all_records_in_folder:
         try:
             HeaderRequest = requests.get(ROOTURL + "/" + record_path + record + ".hea")
@@ -98,8 +97,7 @@ def scrape_mimic(record_path, only_download_first=False):
             # print("DOWNLOAD COMPLETE -- " + filePath)
         except:
             continue
-        numDownloads += 1;
-        if(only_download_first & numDownloads ==3):
+        if(only_download_first):
             break
         # print(record_path)
         convertSingleFileToText(record_path+record)

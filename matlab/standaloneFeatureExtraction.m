@@ -8,8 +8,8 @@ opts = readOptionsStruct();
 featFilePermissions = 'a';
 if(opts.overwrite_feature_files); featFilePermissions='w'; end;
 
-inputFeatFile = fopen(opts.input_feature_file, featFilePermissions);
-outputFeatFile = fopen(opts.output_feature_file, featFilePermissions);
+% inputFeatFile = fopen(opts.input_feature_file, featFilePermissions);
+% outputFeatFile = fopen(opts.output_feature_file, featFilePermissions);
 
 fileList = dir(opts.segmented_file_dir+"*.txt");
 
@@ -50,8 +50,11 @@ parfor (idx = start_idx:end_idx)
 
     t = getCurrentTask();
 
-    inputFeatFile = fopen(opts.input_feature_file+num2str(t.ID), featFilePermissions);
-outputFeatFile = fopen(opts.output_feature_file+num2str(t.ID), featFilePermissions);
+    inFileName = char(opts.input_feature_file);
+    outFileName = char(opts.output_feature_file);
+
+    inputFeatFile = fopen(string(inFileName(1:30))+num2str(t.ID)+".csv", featFilePermissions);
+    outputFeatFile = fopen(string(outFileName(1:31))+num2str(t.ID)+".csv", featFilePermissions);
 
     [inputFeats, outputFeats] = fullInputOutputFeatureExtraction(fileList(idx).name,opts);
     
@@ -73,8 +76,8 @@ outputFeatFile = fopen(opts.output_feature_file+num2str(t.ID), featFilePermissio
 end
 fprintf("\n Completed successfully. \n")
 
-fclose(outputFeatFile);
-fclose(inputFeatFile);
+% fclose(outputFeatFile);
+% fclose(inputFeatFile);
 
 end
 
