@@ -17,14 +17,14 @@ numFiles = length(fileList);
 
 %Run the feature extraction once to get the column headings if overwriting
 %feature files
-if(opts.overwrite_feature_files)
-    fprintf("\n Features files being overwritten... \n")
-    [inputFeats, outputFeats] = fullInputOutputFeatureExtraction(fileList(1).name,opts);
-    writeMapKeysToFile(inputFeatFile, inputFeats, " %10s, ");
-    fprintf(inputFeatFile,"\n");
-    writeMapKeysToFile(outputFeatFile, outputFeats, " %10s, ");
-    fprintf(outputFeatFile,"\n");
-end
+% if(opts.overwrite_feature_files)
+%     fprintf("\n Features files being overwritten... \n")
+%     [inputFeats, outputFeats] = fullInputOutputFeatureExtraction(fileList(1).name,opts);
+%     writeMapKeysToFile(inputFeatFile, inputFeats, " %10s, ");
+%     fprintf(inputFeatFile,"\n");
+%     writeMapKeysToFile(outputFeatFile, outputFeats, " %10s, ");
+%     fprintf(outputFeatFile,"\n");
+% end
 
 start_idx = opts.start_idx_segment2feature;
 end_idx = opts.end_idx_segment2feature;
