@@ -7,6 +7,7 @@ inputFeaturesKeyVal = containers.Map(); %using a key-value pair to store feature
 
 time_width_features = getppgfeatures(ppg_wave, samp_freq);
 if(isempty(time_width_features))
+    inputFeatures = [];
     return;
 end
 for i=1:length(time_width_features)
