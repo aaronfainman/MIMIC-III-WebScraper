@@ -43,7 +43,7 @@ outputWave = zeros(end_idx,25);
 
 %if we want to parallelise this we need to be careful about parallel file
 %writing
-parpool;
+% parpool;
 
 parfor (idx = start_idx:end_idx)
     fprintf('\b\b\b\b\b\b%6i', idx)
