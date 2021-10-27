@@ -44,14 +44,12 @@ outputWave = zeros(end_idx,25);
 %if we want to parallelise this we need to be careful about parallel file
 %writing
 parpool;
-spmd
-    L = labindex;
-end
-inputFeatFile = fopen(opts.input_feature_file+num2str(L), featFilePermissions);
-outputFeatFile = fopen(opts.output_feature_file+num2str(L), featFilePermissions);
 
 parfor (idx = start_idx:end_idx)
     fprintf('\b\b\b\b\b\b%6i', idx)
+
+    inputFeatFile = fopen(opts.input_feature_file+num2str(labindex), featFilePermissions);
+outputFeatFile = fopen(opts.output_feature_file+num2str(labindex), featFilePermissions);
 
     [inputFeats, outputFeats] = fullInputOutputFeatureExtraction(fileList(idx).name,opts);
     
