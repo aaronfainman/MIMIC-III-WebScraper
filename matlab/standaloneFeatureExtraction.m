@@ -53,8 +53,8 @@ parfor (idx = start_idx:end_idx)
     inFileName = char(opts.input_feature_file);
     outFileName = char(opts.output_feature_file);
 
-    inputFeatFile = fopen(string(inFileName(1:30))+num2str(t.ID)+".csv", featFilePermissions);
-    outputFeatFile = fopen(string(outFileName(1:31))+num2str(t.ID)+".csv", featFilePermissions);
+    inputFeatFile = fopen(string(inFileName(1:30))+num2str(t.ID)+".csv", 'a');
+    outputFeatFile = fopen(string(outFileName(1:31))+num2str(t.ID)+".csv", 'a');
 
     [inputFeats, outputFeats] = fullInputOutputFeatureExtraction(fileList(idx).name,opts);
     
