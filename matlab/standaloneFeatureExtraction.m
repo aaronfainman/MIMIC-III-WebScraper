@@ -48,8 +48,10 @@ outputWave = zeros(end_idx,25);
 parfor (idx = start_idx:end_idx)
     fprintf('\b\b\b\b\b\b%6i', idx)
 
-    inputFeatFile = fopen(opts.input_feature_file+num2str(labindex), featFilePermissions);
-outputFeatFile = fopen(opts.output_feature_file+num2str(labindex), featFilePermissions);
+    t = getCurrentTask();
+
+    inputFeatFile = fopen(opts.input_feature_file+num2str(t.ID), featFilePermissions);
+outputFeatFile = fopen(opts.output_feature_file+num2str(t.ID), featFilePermissions);
 
     [inputFeats, outputFeats] = fullInputOutputFeatureExtraction(fileList(idx).name,opts);
     
