@@ -1,47 +1,34 @@
 addSubPaths();
 
-if (exist('ppgImageData') ~= 1)
+if (exist('cwtData') ~= 1)
 
-    disp("Loading PPG image data...");
+    disp("Loading image data...");
 
-    ppgImageData = load('testTrainImageDataPPG.mat');
+    cwtData = load('CNN_data.mat');
 
-    trainImages = ppgImageData.trainImages;
-    testImages = ppgImageData.testImages;
-    trainInput = ppgImageData.trainInput;
-    testInput = ppgImageData.testInput;
+    trainInput = cwtData.trainInput;
+    testInput = cwtData.testInput;
+
+    abpScale = cwtData.abpScale;
+    abpMean = cwtData.abpMean;
+
+    testOutput = cwtData.testOutput;
+    trainOutput = cwtData.trainOutput;
+
+    testOutput = (testOutput - abpMean)./abpScale;
+    trainOutput = (trainOutput - abpMean)./abpScale;
 else
-    disp("PPG image data already in workspace...")
+    disp("Data already in workspace...")
 end
 
-
-disp("Reading feature data...");
-
-[input_tbl, output_tbl, normFactors] = MLFeatureRead(...
-    '../physionet.org/inputFeatures.csv', '../physionet.org/outputFeatures.csv', ...
-    'NormalisationFactors.mat');
-
-output = table2array(output_tbl);
-
-bp_output = output(:, [203 404 405]);
-
-trainSize = length(trainInput);
-trainOutput = bp_output(1:trainSize, :);
-testOutput = bp_output(trainSize+1:end, :);
-
-if length(testInput)+length(trainInput) > length(output)
-    s = length(testInput)+length(trainInput) - length(output);
-    testInput = testInput(:,:,:,s+1:end);
-end
-
-numOutputs = size(bp_output,2);
+numOutputs = size(testOutput,2);
 
 disp("Creating CNN...");
 
 
 % RESNET18 EDITED VIA DEEP NETWORK DESIGNER
 
-params = load("resnet18_params.mat");
+params = load("OldFeatureFiles/resnet18_params.mat");
 
 lgraph = layerGraph();
 
@@ -210,11 +197,11 @@ lgraph = connectLayers(lgraph,"bn5b_branch2b","res5b/in1");
 
 % -------------------------------------------------------------------------------
 miniBatchSize  = 16;
-validationFrequency = floor(length(trainImages.Files)/miniBatchSize);
+validationFrequency = floor(size(testInput,4)/miniBatchSize);
 options = trainingOptions('sgdm', ...
     'MiniBatchSize',miniBatchSize, ...
-    'MaxEpochs',10, ...
-    'InitialLearnRate',1e-5, ...
+    'MaxEpochs',50, ...
+    'InitialLearnRate',1e-4, ...
     'ExecutionEnvironment', 'multi-gpu',...
     'Shuffle','every-epoch', ...
     'ValidationData',{testInput,testOutput}, ...
@@ -223,32 +210,27 @@ options = trainingOptions('sgdm', ...
 
 net = trainNetwork(trainInput, trainOutput, lgraph, options);
 
-disp("Training CNN...");
-
-[net, netInfo] = trainNetwork(trainInput,trainOutput,layers,options);
-
 disp("Evaluating performance...");
 
 pred = predict(net,testInput, 'MiniBatchSize', 16);
 
-predBP = (pred(:,[203 404 405])* normFactors('ABPAmpScale')) + normFactors('ABPAmpMean');
-trueBP = (testOutput(:,[203 404 405])* normFactors('ABPAmpScale')) + normFactors('ABPAmpMean');
+predBP = (pred.*abpScale + abpMean);
+
+trueBP = (testOutput .* abpScale + abpMean);
 
 predictionError =  trueBP - predBP;
 
 % for MAP:
 thresh = 10;
-numCorrect = [ sum(abs(predictionError(:,1)) < thresh) sum(abs(predictionError(:,2)) < thresh) sum(abs(predictionError(:,3)) < thresh)];
-numTestSamples = length(testOutput);
 
-disp("For MAP, DBP, SBP:");
-accuracy = numCorrect./numTestSamples
+mae = abs(predictionError);
 
-squares = predictionError.^2;
-rmse = sqrt(mean(squares))
+overallMAE = mean(mae)
 
-fileList = {trainImages.Files, testImages.Files};
+numCorrect = sum(mae < 10);
+disp("For SBP, DBP, MAP:");
+accuracy = numCorrect./length(testInput)
 
-save('211005_GoogLeNet_CNN.mat','net', 'fileList', '-v7.3');
+save('resnet_CNN.mat','net', 'net', '-v7.3');
 
 

@@ -35,10 +35,9 @@ fb = cwtfilterbank('SignalLength',minLength,'VoicesPerOctave',12, 'SamplingFrequ
 
 cwtSize = size(fb.wt(allData{1}(1:minLength,3)));
 
-ppgCWTs = tall(zeros(cwtSize(1), cwtSize(2), length(startId:endId)));
-abpCWTs = tall(zeros(cwtSize(1), cwtSize(2), length(startId:endId)));
-
 imSize = [224 224]
+
+abpVals = zeros(endId-startId+1, 3);
 
 parfor idx = startId:endId
    
@@ -56,18 +55,50 @@ parfor idx = startId:endId
   
     imFileName = strcat(fileList(idx).name(1:end-4),'_','PPG','.jpg');
     imwrite(imresize(im, imSize),fullfile(images_dir,'PPG',imFileName));
-    
-    cwtABP = fb.wt(abp);
-    cfsABP = abs(cwtABP);
+    	
+
+    abpVals(idx, :) = [max(abp), min(abp), mean(abp)];
+    %cwtABP = fb.wt(abp);
+    %cfsABP = abs(cwtABP);
     
     %abpCWTs(:,:,idx) = cwtABP;
 
-    im = ind2rgb(im2uint8(rescale(cfsABP)),jet(128));
+    %im = ind2rgb(im2uint8(rescale(cfsABP)),jet(128));
   
-    imFileName = strcat(fileList(idx).name(1:end-4),'_','ABP','.jpg');
-    imwrite(imresize(im, imSize),fullfile(images_dir,'ABP',imFileName));
+    %imFileName = strcat(fileList(idx).name(1:end-4),'_','ABP','.jpg');
+    %imwrite(imresize(im, imSize,fullfile(images_dir,'ABP',imFileName));
 
 end
 
-save('cwtData.mat','ppgCWTs','abpCWTs');
+segmented_file_dir = "../physionet.org/segmented_data/";
+images_dir = "../physionet.org/cwt_images";
+
+disp("Reading images...");
+
+allImages = imageDatastore(fullfile(images_dir,'PPG/'),'LabelSource', 'foldernames');
+
+[trainImages, testImages] = splitEachLabel(allImages,0.8);
+
+trainSize = length(trainImages.Files);
+
+disp("Generating train and test I/O data...");
+
+trainInput = zeros(224,224,3,trainSize, 'uint8');
+
+parfor i = 1:trainSize
+    trainInput(:,:,:,i) = readimage(trainImages,i);
+end
+
+testInput = zeros(224,224,3,length(testImages.Files), 'uint8');
+parfor i = 1:length(testImages.Files)
+    testInput(:,:,:,i) = readimage(testImages,i);
+end
+
+trainOutput = abpVals(1:trainSize, :);
+testOutput = abpVals(trainSize+1:trainSize+length(testImages.Files),:);
+
+abpScale = mean(abpVals(:,1) - abpVals(:,2));
+abpMean = mean(abpVals(:,3));
+
+save('CNN_data.mat','testInput', 'testOutput', 'trainInput', 'trainOutput', 'abpScale', 'abpMean', '-v7.3');
 
