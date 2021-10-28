@@ -1,6 +1,6 @@
 function [abpWave, sbp, dbp, map] = predictABP(ppgWave, nnets, isNorm)
 
-if 0%(~isNorm)
+if (~isNorm)
     ppgWaveNorm = (ppgWave-nnets.ppgMean)./nnets.ppgScale;
 else
     ppgWaveNorm = ppgWave;
@@ -15,18 +15,18 @@ else
 end
 
 %ppgProcessed = processRawPPG(ppgWaveDenorm);
-ppgProcessed = ppgWaveDenorm;
+% ppgProcessed = ppgWaveDenorm;
+% 
+% if isempty(ppgProcessed)
+%     abpWave = [];
+%     sbp = 0;
+%     dbp = 0;
+%     map = 0;
+%     return;
+% end
 
-if isempty(ppgProcessed)
-    abpWave = [];
-    sbp = 0;
-    dbp = 0;
-    map = 0;
-    return;
-end
 
-
-ppgFeats = getInputFeatures(ppgProcessed, 125);
+ppgFeats = getInputFeatures(ppgWaveDenorm, 125);
 
 
 if isempty(ppgFeats)

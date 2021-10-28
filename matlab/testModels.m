@@ -2,25 +2,18 @@ addSubPaths();
 
 disp('Reading data from mat file...');
 if (~exist("dataMatFile"))
-dataMatFile = load('timeObservationsWithLastSecond.mat');
+dataMatFile = load('FinalNetworks/WaveformsExtendedData.mat');
 ppgData = dataMatFile.inputFeats;
 abpOutData = dataMatFile.outputFeatsWave;
-
-
-featsFile = load('FeatureObservationsExtendedFeats.mat');
-
-ppgFeats = featsFile.inputFeatsExt;
-
-% [SBP, DBP, MAP]
 abpVals = dataMatFile.outputFeatsBP;
 
 disp('Getting test data...');
 
-testIndices = featsFile.testIndices;
+testIndices = dataMatFile.testIndices;
 testInput = num2cell(ppgData(testIndices,:)',1)';
-testFeats = featsFile.testInput;
 testOutput = num2cell(abpOutData(testIndices,:)',1)';
-testOutputBP = dataMatFile.testOutputT;
+testOutputBP = abpOutData(testIndices,:);
+
 
 end
 
@@ -32,30 +25,31 @@ trueBP = abpOutData(testIndices,:).*nnets.abpScale + nnets.abpMean;
 %%
 numObs = length(testInput);
 
-n = 8;
+abpOuts = cell(numObs, 1);
 
-rnd = [3134, 3181, 2813, 1225, 2864, 707, 3104, 3018]
-
-abpOuts = cell(1, n);
-
-for i = 1:n
-    abpOuts{i} = predictABP(testInput{rnd(i)}, testFeats(i,:), nnets);
+for i = 1:numObs
+    abpOuts{i} = predictABP(testInput{i}, nnets, 1);
 end
 
-pearsonCoeffs = zeros(1,n);
-mae = zeros(1,n);
+pearsonCoeffs = zeros(1,numObs);
+mae = zeros(1,numObs);
 
-for i = 1:n
-    pearsonCoeffs(i) = pearsonCoeff(abpOuts{i}, trueBP(rnd(i),:)');
-    mae(i) = mean(abs(abpOuts{i} - trueBP(rnd(i),:)'));
+for i = 1:numObs
+    pearsonCoeffs(i) = pearsonCoeff(abpOuts{i}, trueBP(i,:)');
+    mae(i) = mean(abs(abpOuts{i} - trueBP(i,:)'));
 end
 	
 figure;
+
+n = 15;
+
+%rnd = [3134, 3181, 2813, 1225, 2864, 707, 3104, 3018]
+rnd = randperm(numObs, n);
 for i = 1:n
-    subplot(2,4,i);
+    subplot(3,5,i);
     plot(trueBP(rnd(i),:));
     hold on;
-    plot(abpOuts{i});
+    plot(abpOuts{rnd(i)});
     hold off;
  %  title("Test " + rnd(i));
  %  xlabel("MAE = " + mae(i) +", P = " + pearsonCoeffs(i))
